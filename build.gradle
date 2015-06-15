@@ -1,0 +1,64 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+sourceCompatibility = '1.8'
+
+mainClassName = 'Main'
+
+sourceSets {
+	main.java.srcDir 'src'
+	//main.java.resources.srcDir 'resources'
+	test.java.srcDir 'test'
+	//test.java.resources.srcDir 'test-resources'
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile 'org.slf4j:slf4j-api:1.7.+'
+	compile 'ch.qos.logback:logback-classic:1.+'
+	compile fileTree(dir: 'lib', include: ['*.jar'])
+	testCompile 'junit:junit:4.+'
+}
+
+task libs(type: Sync) {
+	from configurations.runtime
+	into 'dist/lib'
+}
+build.dependsOn(libs)
+
+jar {
+	destinationDir = file("dist")
+	manifest {
+		attributes(
+				'Main-Class': mainClassName,
+				'Class-Path': configurations.runtime.files.collect { 'lib/' + it.name }.join(' ')
+		)
+	}
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	destinationDir = jar.destinationDir
+	classifier = 'javadoc'
+	from javadoc.destinationDir
+}
+build.dependsOn(javadocJar)
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+	destinationDir = jar.destinationDir
+	classifier = 'sources'
+	from sourceSets.main.allSource
+}
+build.dependsOn(sourcesJar)
+
+task deleteDist {
+	new File('dist').deleteDir()
+}
+clean.dependsOn(deleteDist)
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.4'
+}
+
