@@ -1,10 +1,9 @@
 package hu.hgj.sceletus.test.queues;
 
-import hu.hgj.sceletus.NamedSimpleQueue;
-import hu.hgj.sceletus.NamedTopicQueue;
-import hu.hgj.sceletus.QueueManager;
-import hu.hgj.sceletus.SimpleQueue;
-import hu.hgj.sceletus.TopicQueue;
+import hu.hgj.sceletus.queue.QueueManager;
+import hu.hgj.sceletus.queue.SimpleQueue;
+import hu.hgj.sceletus.queue.TopicQueue;
+import hu.hgj.sceletus.queue.WithTopic;
 import hu.hgj.sceletus.test.queues.helpers.Gatherer;
 import org.junit.Test;
 
@@ -20,7 +19,7 @@ public class QueueTests {
 
 	@Test
 	public void integerQueueTest() {
-		SimpleQueue<Integer> integerSimpleQueue = new NamedSimpleQueue<>("integerSimpleQueue", 1);
+		SimpleQueue<Integer> integerSimpleQueue = new SimpleQueue<>("integerSimpleQueue", 1, false);
 		ArrayList<Integer> integerStorage = new ArrayList<>();
 		Gatherer<Integer> integerGatherer = new Gatherer<>(integerStorage);
 		integerSimpleQueue.subscribe(integerGatherer);
@@ -41,15 +40,16 @@ public class QueueTests {
 
 	@Test
 	public void integerTopicQueueTest() {
-		TopicQueue<Integer> integerTopicQueue = new NamedTopicQueue<>("integerTopicQueue", 1);
-		ArrayList<Integer> integerStorage = new ArrayList<>();
-		Gatherer<Integer> integerGatherer = new Gatherer<>(integerStorage);
+		TopicQueue<Integer> integerTopicQueue = new TopicQueue<>("integerTopicQueue", 1, false);
+		ArrayList<WithTopic<Integer>> integerStorage = new ArrayList<>();
+		Gatherer<WithTopic<Integer>> integerGatherer = new Gatherer<>(integerStorage);
+		String topic = "integer";
 		integerTopicQueue.subscribe(integerGatherer, new LinkedHashSet<String>() {{
-			add("integer");
+			add(topic);
 		}});
 		integerTopicQueue.start();
 		for (int i = 0; i < numberOfElements; i++) {
-			integerTopicQueue.add("integer", i);
+			integerTopicQueue.add(topic, i);
 		}
 		// Wait for queue to become empty
 		try {
@@ -58,7 +58,7 @@ public class QueueTests {
 			exception.printStackTrace();
 		}
 		for (int i = 0; i < numberOfElements; i++) {
-			assertTrue(String.format("integerStorage should contain number %d", i), integerStorage.contains(i));
+			assertTrue(String.format("integerStorage should contain number %d", i), integerStorage.contains(new WithTopic<>(topic, i)));
 		}
 	}
 

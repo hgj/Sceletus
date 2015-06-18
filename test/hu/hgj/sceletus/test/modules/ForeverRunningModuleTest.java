@@ -1,6 +1,6 @@
 package hu.hgj.sceletus.test.modules;
 
-import hu.hgj.sceletus.Module;
+import hu.hgj.sceletus.module.Module;
 import hu.hgj.sceletus.test.modules.implementations.ForeverRunningSingleThreadedModule;
 import org.junit.Test;
 
@@ -14,7 +14,7 @@ public class ForeverRunningModuleTest {
 	@Test
 	public void foreverRunningModuleTest() {
 		Set<Integer> outputSet = new CopyOnWriteArraySet<>();
-		Module module = new ForeverRunningSingleThreadedModule(outputSet);
+		Module module = new ForeverRunningSingleThreadedModule("testModule", outputSet);
 		assertEquals("Module state should be UNKNOWN", Module.State.UNKNOWN, module.getState());
 		assertEquals("Module should successfully reset()", true, module.reset());
 		assertEquals("Module state should be RESET", Module.State.RESET, module.getState());

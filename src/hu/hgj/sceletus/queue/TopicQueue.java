@@ -1,4 +1,6 @@
-package hu.hgj.sceletus;
+package hu.hgj.sceletus.queue;
+
+import hu.hgj.sceletus.module.MultiThreadedModule;
 
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -9,16 +11,20 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class TopicQueue<E> extends MultiThreadedModule implements Queue {
 
 	private final BlockingQueue<WithTopic<E>> queue = new LinkedBlockingQueue<>();
 	private final int workers;
-	private final Map<TopicQueueListener<E>, Set<Pattern>> listeners = new ConcurrentHashMap<>();
-	private final Map<String, Set<TopicQueueListener<E>>> filtersCache = new ConcurrentHashMap<>();
+	private final boolean allowDuplicates;
+	private final Map<QueueListener<WithTopic<E>>, Set<Pattern>> listeners = new ConcurrentHashMap<>();
+	private final Map<String, Set<QueueListener<WithTopic<E>>>> filtersCache = new ConcurrentHashMap<>();
 
-	public TopicQueue(int workers) {
+	public TopicQueue(String name, int workers, boolean allowDuplicates) {
+		super(name);
 		this.workers = workers;
+		this.allowDuplicates = allowDuplicates;
 	}
 
 	public BlockingQueue<WithTopic<E>> getQueue() {
@@ -34,21 +40,25 @@ public class TopicQueue<E> extends MultiThreadedModule implements Queue {
 	}
 
 	public boolean add(WithTopic<E> elementWithTopic) {
+		if (!allowDuplicates && queue.contains(elementWithTopic)) {
+			return false;
+		}
 		return queue.add(elementWithTopic);
 	}
 
-	public void unSubscribe(TopicQueueListener<E> listener) {
+	public Map<QueueListener<WithTopic<E>>, Set<Pattern>> getListeners() {
+		return listeners;
+	}
+
+	public void unSubscribe(QueueListener<WithTopic<E>> listener) {
 		subscribe(listener, null);
 	}
 
-	public void subscribe(TopicQueueListener<E> listener, Set<String> filters) {
+	public void subscribe(QueueListener<WithTopic<E>> listener, Set<String> filters) {
 		if (filters == null) {
 			listeners.remove(listener);
 		} else {
-			Set<Pattern> patterns = new LinkedHashSet<>();
-			for (String filter : filters) {
-				patterns.add(Pattern.compile(filter));
-			}
+			Set<Pattern> patterns = filters.stream().map(Pattern::compile).collect(Collectors.toCollection(LinkedHashSet::new));
 			listeners.put(listener, patterns);
 		}
 		filtersCache.clear();
@@ -63,9 +73,14 @@ public class TopicQueue<E> extends MultiThreadedModule implements Queue {
 	protected void main(int threadID) {
 		while (running) {
 			try {
+				if (waitingForListeners()) {
+					continue;
+				}
 				WithTopic<E> elementWithTopic = queue.poll(1, TimeUnit.SECONDS);
 				if (elementWithTopic != null) {
-					workWithElement(elementWithTopic);
+					if (!workWithElement(elementWithTopic)) {
+						this.add(elementWithTopic);
+					}
 				}
 			} catch (InterruptedException exception) {
 				// Ignore interrupt
@@ -73,12 +88,21 @@ public class TopicQueue<E> extends MultiThreadedModule implements Queue {
 		}
 	}
 
-	protected void workWithElement(WithTopic<E> elementWithTopic) {
-		Set<TopicQueueListener<E>> affectedListeners = filtersCache.get(elementWithTopic.topic);
+	protected boolean waitingForListeners() throws InterruptedException {
+		if (listeners.size() == 0) {
+			Thread.sleep(1000);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	protected boolean workWithElement(WithTopic<E> elementWithTopic) {
+		Set<QueueListener<WithTopic<E>>> affectedListeners = filtersCache.get(elementWithTopic.topic);
 		if (affectedListeners == null) {
 			affectedListeners = new LinkedHashSet<>();
 			listenersLoop:
-			for (Map.Entry<TopicQueueListener<E>, Set<Pattern>> entry : listeners.entrySet()) {
+			for (Map.Entry<QueueListener<WithTopic<E>>, Set<Pattern>> entry : listeners.entrySet()) {
 				Set<Pattern> patterns = entry.getValue();
 				for (Pattern pattern : patterns) {
 					Matcher matcher = pattern.matcher(elementWithTopic.topic);
@@ -90,9 +114,10 @@ public class TopicQueue<E> extends MultiThreadedModule implements Queue {
 			}
 			filtersCache.put(elementWithTopic.topic, affectedListeners);
 		}
-		for (TopicQueueListener<E> listener : affectedListeners) {
-			listener.handleElement(elementWithTopic.topic, elementWithTopic.value);
+		for (QueueListener<WithTopic<E>> listener : affectedListeners) {
+			listener.handleElement(elementWithTopic);
 		}
+		return affectedListeners.size() > 0;
 	}
 
 }

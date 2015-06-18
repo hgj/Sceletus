@@ -1,7 +1,7 @@
 package hu.hgj.sceletus.test.modules;
 
-import hu.hgj.sceletus.AbstractModuleAdapter;
-import hu.hgj.sceletus.Module;
+import hu.hgj.sceletus.module.AbstractModuleAdapter;
+import hu.hgj.sceletus.module.Module;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -10,7 +10,7 @@ public class FailingModuleControlTests {
 
 	@Test
 	public void failingResetTest() {
-		Module module = new AbstractModuleAdapter() {
+		Module module = new AbstractModuleAdapter("testModule") {
 			@Override
 			protected boolean doReset() {
 				return false;
@@ -23,7 +23,7 @@ public class FailingModuleControlTests {
 
 	@Test
 	public void failingStartTest() {
-		Module module = new AbstractModuleAdapter() {
+		Module module = new AbstractModuleAdapter("testModule") {
 			@Override
 			protected boolean doStart() {
 				return false;
@@ -40,7 +40,7 @@ public class FailingModuleControlTests {
 
 	@Test
 	public void failingStopTest() {
-		Module module = new AbstractModuleAdapter() {
+		Module module = new AbstractModuleAdapter("testModule") {
 			@Override
 			protected boolean doStop() {
 				return false;

@@ -6,8 +6,8 @@ import java.util.Set;
 
 public class LongRunningMultiThreadedModule extends SimpleMultiThreadedModule {
 
-	public LongRunningMultiThreadedModule(Set<Integer> outputSet, int threads) {
-		super(outputSet, threads);
+	public LongRunningMultiThreadedModule(String name, Set<Integer> outputSet, int threads) {
+		super(name, outputSet, threads);
 	}
 
 	@Override

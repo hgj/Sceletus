@@ -1,17 +1,43 @@
-package hu.hgj.sceletus;
+package hu.hgj.sceletus.module;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Map;
 
-public abstract class MultiThreadedModule extends AbstractModule {
+public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 
-	private ArrayList<Thread> threads;
+	public int threadJoinTimeout = 2000;
+
+	protected ArrayList<Thread> threads;
 
 	protected boolean running = false;
 
 	protected abstract int getNumberOfThreads();
+
+	public MultiThreadedModule(String name) {
+		super(name);
+	}
+
+	public MultiThreadedModule(String name, int timeout) {
+		super(name);
+		threadJoinTimeout = timeout;
+	}
+
+	@Override
+	public boolean updateConfiguration(Map<String, Object> configurationMap) {
+		String fieldName = "threadJoinTimeout";
+		if (configurationMap.containsKey(fieldName)) {
+			try {
+				threadJoinTimeout = (int) configurationMap.get(fieldName);
+			} catch (ClassCastException exception) {
+				logger.warn("Configuration for '{}' should be an integer.", fieldName, exception);
+				return false;
+			}
+		}
+		return true;
+	}
 
 	@Override
 	protected boolean doReset() {
@@ -22,16 +48,15 @@ public abstract class MultiThreadedModule extends AbstractModule {
 	}
 
 	protected String nameThread(int threadID) {
-		return this.getClass().getSimpleName() + "#" + this.hashCode() + "-" + threadID;
+		return this.getClass().getSimpleName() + "#" + this.hashCode() + "(" + getName() + ")" + "-" + threadID;
 	}
 
 	@Override
 	protected boolean doStart() {
-		Logger logger = LoggerFactory.getLogger(this.getClass());
 		logger.debug("Starting {} threads...", getNumberOfThreads());
 		running = true;
 		for (int threadID = 0; threadID < getNumberOfThreads(); threadID++) {
-			Object threadLock = new Object();
+			final Object threadLock = new Object();
 			final boolean[] threadRunning = {false};
 			final int finalThreadID = threadID;
 			String threadName = nameThread(threadID);
@@ -67,17 +92,14 @@ public abstract class MultiThreadedModule extends AbstractModule {
 		logger.debug("Stopping {} threads.", threads.size());
 		running = false;
 		// Join threads with interruption
-		for (Thread thread : threads) {
-			if (thread.isAlive()) {
-				thread.interrupt();
-				try {
-					// TODO: Make timeout configurable
-					thread.join(2000);
-				} catch (InterruptedException exception) {
-					logger.warn("Interrupted while waiting for thread '{}' to stop.", thread.getName(), exception);
-				}
+		threads.stream().filter(Thread::isAlive).forEach(thread -> {
+			thread.interrupt();
+			try {
+				thread.join(threadJoinTimeout);
+			} catch (InterruptedException exception) {
+				logger.warn("Interrupted while waiting for thread '{}' to stop.", thread.getName(), exception);
 			}
-		}
+		});
 		boolean allThreadsStopped = true;
 		for (Thread thread : threads) {
 			if (thread.isAlive()) {

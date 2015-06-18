@@ -1,6 +1,10 @@
-package hu.hgj.sceletus;
+package hu.hgj.sceletus.module;
 
 public abstract class SingleThreadedModule extends MultiThreadedModule {
+
+	public SingleThreadedModule(String name) {
+		super(name);
+	}
 
 	@Override
 	protected int getNumberOfThreads() {

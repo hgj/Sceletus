@@ -1,4 +1,6 @@
-package hu.hgj.sceletus;
+package hu.hgj.sceletus.queue;
+
+import hu.hgj.sceletus.module.MultiThreadedModule;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -11,10 +13,13 @@ public class SimpleQueue<E> extends MultiThreadedModule implements Queue {
 
 	private final BlockingQueue<E> queue = new LinkedBlockingQueue<>();
 	private final int workers;
+	private final boolean allowDuplicates;
 	protected final Set<QueueListener<E>> listeners = Collections.synchronizedSet(new LinkedHashSet<>());
 
-	public SimpleQueue(int workers) {
+	public SimpleQueue(String name, int workers, boolean allowDuplicates) {
+		super(name);
 		this.workers = workers;
+		this.allowDuplicates = allowDuplicates;
 	}
 
 	public BlockingQueue<E> getQueue() {
@@ -26,15 +31,22 @@ public class SimpleQueue<E> extends MultiThreadedModule implements Queue {
 	}
 
 	public boolean add(E element) {
+		if (!allowDuplicates && queue.contains(element)) {
+			return false;
+		}
 		return queue.add(element);
 	}
 
-	public void unSubscribe(QueueListener<E> listener) {
-		listeners.remove(listener);
+	public Set<QueueListener<E>> getListeners() {
+		return listeners;
 	}
 
-	public void subscribe(QueueListener<E> listener) {
-		listeners.add(listener);
+	public boolean unSubscribe(QueueListener<E> listener) {
+		return listeners.remove(listener);
+	}
+
+	public boolean subscribe(QueueListener<E> listener) {
+		return listeners.add(listener);
 	}
 
 	@Override
@@ -46,9 +58,14 @@ public class SimpleQueue<E> extends MultiThreadedModule implements Queue {
 	protected void main(int threadID) {
 		while (running) {
 			try {
+				if (waitingForListeners()) {
+					continue;
+				}
 				E element = queue.poll(1, TimeUnit.SECONDS);
 				if (element != null) {
-					workWithElement(element);
+					if (!workWithElement(element)) {
+						this.add(element);
+					}
 				}
 			} catch (InterruptedException exception) {
 				// Ignore interrupt
@@ -56,9 +73,22 @@ public class SimpleQueue<E> extends MultiThreadedModule implements Queue {
 		}
 	}
 
-	protected void workWithElement(E element) {
-		for (QueueListener<E> listener : listeners) {
-			listener.handleElement(element);
+	protected boolean waitingForListeners() throws InterruptedException {
+		if (listeners.size() == 0) {
+			Thread.sleep(1000);
+			return true;
+		} else {
+			return false;
 		}
 	}
+
+	protected boolean workWithElement(E element) {
+		boolean result = false;
+		for (QueueListener<E> listener : listeners) {
+			listener.handleElement(element);
+			result = true;
+		}
+		return result;
+	}
+
 }

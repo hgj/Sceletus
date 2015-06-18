@@ -1,16 +1,22 @@
 package hu.hgj.sceletus.test.modules;
 
-import hu.hgj.sceletus.AbstractModuleAdapter;
-import hu.hgj.sceletus.Module;
+import hu.hgj.sceletus.module.AbstractModuleAdapter;
+import hu.hgj.sceletus.module.Module;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
 public class AbnormalModuleControlTests {
 
+	private Module createTestModule() {
+		return new AbstractModuleAdapter("testModule") {
+			// Nothing here;
+		};
+	}
+
 	@Test
 	public void doubleResetTest() {
-		Module module = new AbstractModuleAdapter();
+		Module module = createTestModule();
 		assertEquals("Module state should be UNKNOWN", Module.State.UNKNOWN, module.getState());
 		assertEquals("Module should successfully reset()", true, module.reset());
 		assertEquals("Module state should be RESET", Module.State.RESET, module.getState());
@@ -20,7 +26,7 @@ public class AbnormalModuleControlTests {
 
 	@Test
 	public void noResetStartTest() {
-		Module module = new AbstractModuleAdapter();
+		Module module = createTestModule();
 		assertEquals("Module state should be UNKNOWN", Module.State.UNKNOWN, module.getState());
 		assertEquals("Module should successfully start()", true, module.start());
 		assertEquals("Module state should be STARTED", Module.State.STARTED, module.getState());
@@ -28,7 +34,7 @@ public class AbnormalModuleControlTests {
 
 	@Test
 	public void doubleStartTest() {
-		Module module = new AbstractModuleAdapter();
+		Module module = createTestModule();
 		assertEquals("Module state should be UNKNOWN", Module.State.UNKNOWN, module.getState());
 		assertEquals("Module should successfully start()", true, module.start());
 		assertEquals("Module state should be STARTED", Module.State.STARTED, module.getState());
@@ -38,7 +44,7 @@ public class AbnormalModuleControlTests {
 
 	@Test
 	public void doubleStopTest() {
-		Module module = new AbstractModuleAdapter();
+		Module module = createTestModule();
 		assertEquals("Module state should be UNKNOWN", Module.State.UNKNOWN, module.getState());
 		assertEquals("Module should successfully start()", true, module.start());
 		assertEquals("Module state should be STARTED", Module.State.STARTED, module.getState());
@@ -50,7 +56,7 @@ public class AbnormalModuleControlTests {
 
 	@Test
 	public void resetStartedTest() {
-		Module module = new AbstractModuleAdapter();
+		Module module = createTestModule();
 		assertEquals("Module state should be UNKNOWN", Module.State.UNKNOWN, module.getState());
 		assertEquals("Module should successfully reset()", true, module.reset());
 		assertEquals("Module state should be RESET", Module.State.RESET, module.getState());

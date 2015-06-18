@@ -1,10 +1,24 @@
-package hu.hgj.sceletus;
+package hu.hgj.sceletus.module;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractModule implements Module {
 
+	protected Logger logger = LoggerFactory.getLogger(this.getClass());
+
+	private final String name;
+
 	private State state = State.UNKNOWN;
+
+	public AbstractModule(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
 
 	@Override
 	public State getState() {
@@ -14,11 +28,11 @@ public abstract class AbstractModule implements Module {
 	@Override
 	public boolean reset() {
 		if (state == State.RESET) {
-			LoggerFactory.getLogger(this.getClass()).warn("Module already RESET. Not doing anything.");
+			logger.warn("Module '{}' is already RESET. Not doing anything.", getName());
 			return true;
 		}
 		if (state == State.STARTED) {
-			LoggerFactory.getLogger(this.getClass()).warn("Module is STARTED. Stopping before resetting.");
+			logger.warn("Module '{}' is STARTED. Stopping before resetting.", getName());
 			if (!stop()) {
 				// Not logging here about the stop() call.
 				return false;
@@ -26,11 +40,11 @@ public abstract class AbstractModule implements Module {
 		}
 		if (doReset()) {
 			state = State.RESET;
-			LoggerFactory.getLogger(this.getClass()).info("Module is RESET.");
+			logger.info("Module '{}' is RESET.", getName());
 			return true;
 		} else {
 			state = State.UNKNOWN;
-			LoggerFactory.getLogger(this.getClass()).error("Failed to RESET module. Module is in UNKNOWN state.");
+			logger.error("Failed to RESET module '{}'. Module is in UNKNOWN state.", getName());
 			return false;
 		}
 	}
@@ -40,11 +54,11 @@ public abstract class AbstractModule implements Module {
 	@Override
 	public boolean start() {
 		if (state == State.STARTED) {
-			LoggerFactory.getLogger(this.getClass()).warn("Module already STARTED. Not doing anything.");
+			logger.warn("Module '{}' is already STARTED. Not doing anything.", getName());
 			return true;
 		}
 		if (state != State.RESET) {
-			LoggerFactory.getLogger(this.getClass()).warn("Module is not RESET. Resetting before starting.");
+			logger.warn("Module '{}' is not RESET. Resetting before starting.", getName());
 			if (!reset()) {
 				// Not logging here about the reset() call.
 				return false;
@@ -52,11 +66,11 @@ public abstract class AbstractModule implements Module {
 		}
 		if (doStart()) {
 			state = State.STARTED;
-			LoggerFactory.getLogger(this.getClass()).info("Module is STARTED.");
+			logger.info("Module '{}' is STARTED.", getName());
 			return true;
 		} else {
 			state = State.UNKNOWN;
-			LoggerFactory.getLogger(this.getClass()).error("Failed to START module. Module is in UNKNOWN state.");
+			logger.error("Failed to START module '{}'. Module is in UNKNOWN state.", getName());
 			return false;
 		}
 	}
@@ -66,17 +80,17 @@ public abstract class AbstractModule implements Module {
 	@Override
 	public boolean stop() {
 		if (state == State.STOPPED) {
-			LoggerFactory.getLogger(this.getClass()).warn("Module already STOPPED. Not doing anything.");
+			logger.warn("Module '{}' is already STOPPED. Not doing anything.", getName());
 			return true;
 		}
 		// We do not care about any other state, just stop the module because it is requested.
 		if (doStop()) {
 			state = State.STOPPED;
-			LoggerFactory.getLogger(this.getClass()).info("Module is STOPPED.");
+			logger.info("Module '{}' is STOPPED.", getName());
 			return true;
 		} else {
 			state = State.UNKNOWN;
-			LoggerFactory.getLogger(this.getClass()).error("Failed to STOP module. Module is in UNKNOWN state.");
+			logger.error("Failed to STOP module '{}'. Module is in UNKNOWN state.", getName());
 			return false;
 		}
 	}
@@ -87,7 +101,7 @@ public abstract class AbstractModule implements Module {
 	protected void finalize() throws Throwable {
 		super.finalize();
 		if (state == State.STARTED) {
-			LoggerFactory.getLogger(this.getClass()).info("Module destroyed but still running. Stopping in finalize().");
+			logger.info("Module '{}' destroyed but still running. Stopping in finalize().", getName());
 			stop();
 		}
 	}

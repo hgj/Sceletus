@@ -1,6 +1,6 @@
 package hu.hgj.sceletus.test.modules.implementations;
 
-import hu.hgj.sceletus.MultiThreadedModule;
+import hu.hgj.sceletus.module.MultiThreadedModule;
 
 import java.util.Set;
 
@@ -9,7 +9,8 @@ public class SimpleMultiThreadedModule extends MultiThreadedModule {
 	protected final Set<Integer> outputSet;
 	private final int threads;
 
-	public SimpleMultiThreadedModule(Set<Integer> outputSet, int threads) {
+	public SimpleMultiThreadedModule(String name, Set<Integer> outputSet, int threads) {
+		super(name);
 		this.outputSet = outputSet;
 		this.threads = threads;
 	}

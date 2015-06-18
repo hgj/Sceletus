@@ -1,6 +1,6 @@
 package hu.hgj.sceletus.test.modules.helpers;
 
-import hu.hgj.sceletus.Module;
+import hu.hgj.sceletus.module.Module;
 
 import java.util.Set;
 

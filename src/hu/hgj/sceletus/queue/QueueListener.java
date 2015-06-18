@@ -1,4 +1,4 @@
-package hu.hgj.sceletus;
+package hu.hgj.sceletus.queue;
 
 public interface QueueListener<E> {
 

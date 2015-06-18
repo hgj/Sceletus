@@ -1,6 +1,10 @@
-package hu.hgj.sceletus;
+package hu.hgj.sceletus.module;
+
+import java.util.Map;
 
 public interface Module {
+
+	String getName();
 
 	enum State {
 		UNKNOWN,
@@ -10,6 +14,8 @@ public interface Module {
 	}
 
 	State getState();
+
+	boolean updateConfiguration(Map<String, Object> configurationMap);
 
 	boolean reset();
 
