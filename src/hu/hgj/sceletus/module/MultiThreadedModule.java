@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 
@@ -56,29 +57,21 @@ public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 		logger.debug("Starting {} threads...", getNumberOfThreads());
 		running = true;
 		for (int threadID = 0; threadID < getNumberOfThreads(); threadID++) {
-			final Object threadLock = new Object();
-			final boolean[] threadRunning = {false};
+			final CountDownLatch threadStartedLatch = new CountDownLatch(1);
 			final int finalThreadID = threadID;
 			String threadName = nameThread(threadID);
 			Thread thread = new Thread(() -> {
-				synchronized (threadLock) {
-					threadRunning[0] = true;
-					threadLock.notify();
-				}
+				threadStartedLatch.countDown();
 				LoggerFactory.getLogger(this.getClass()).debug("Starting thread '{}'", threadName);
 				MultiThreadedModule.this.main(finalThreadID);
 			});
 			threads.add(threadID, thread);
 			thread.setName(threadName);
 			thread.start();
-			synchronized (threadLock) {
-				try {
-					while (!threadRunning[0]) {
-						threadLock.wait();
-					}
-				} catch (InterruptedException exception) {
-					logger.warn("Interrupted while waiting for thread '{}' to start.", thread.getName(), exception);
-				}
+			try {
+				threadStartedLatch.await();
+			} catch (InterruptedException exception) {
+				logger.warn("Interrupted while waiting for thread '{}' to start.", thread.getName(), exception);
 			}
 		}
 		return true;
