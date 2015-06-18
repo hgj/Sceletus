@@ -34,6 +34,9 @@ public class ModuleManager {
 		} catch (ClassNotFoundException exception) {
 			logger.error("Can not find class '{}'.", className, exception);
 			return null;
+		} catch (ClassCastException exception) {
+			logger.error("Can not cast class '{}' to Module.", className, exception);
+			return null;
 		}
 	}
 
