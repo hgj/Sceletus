@@ -40,18 +40,18 @@ public class ModuleManager {
 		}
 	}
 
-	public static Module createModule(String className) {
+	public static Module createModule(String moduleName, String className) {
 		Class<? extends Module> moduleClass = findModule(className);
 		if (moduleClass != null) {
 			Constructor<? extends Module> moduleConstructor;
 			try {
-				moduleConstructor = moduleClass.getConstructor();
+				moduleConstructor = moduleClass.getConstructor(String.class);
 			} catch (NoSuchMethodException exception) {
 				logger.error("Can not find constructor for module '{}'.", moduleClass.getCanonicalName(), exception);
 				return null;
 			}
 			try {
-				return moduleConstructor.newInstance();
+				return moduleConstructor.newInstance(moduleName);
 			} catch (InstantiationException | IllegalAccessException | InvocationTargetException exception) {
 				logger.error("Can not construct module '{}'.", moduleClass.getCanonicalName(), exception);
 				return null;
@@ -85,7 +85,10 @@ public class ModuleManager {
 				logger.error("Can not load module without 'name' or 'class'.");
 				return false;
 			}
-			Module module = ModuleManager.createModule((String) moduleConfiguration.get("class"));
+			Module module = ModuleManager.createModule(
+					(String) moduleConfiguration.get("name"),
+					(String) moduleConfiguration.get("class")
+			);
 			if (module != null) {
 				if (moduleConfiguration.containsKey("configuration")) {
 					try {
