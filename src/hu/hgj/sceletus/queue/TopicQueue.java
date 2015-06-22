@@ -114,9 +114,11 @@ public class TopicQueue<E> extends MultiThreadedModule implements Queue {
 			}
 			filtersCache.put(elementWithTopic.topic, affectedListeners);
 		}
+		boolean success = true;
 		for (QueueListener<WithTopic<E>> listener : affectedListeners) {
-			listener.handleElement(elementWithTopic);
+			success &= listener.handleElement(elementWithTopic);
 		}
+		if (affectedListeners.size() == 1) return success;
 		return affectedListeners.size() > 0;
 	}
 

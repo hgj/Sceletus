@@ -83,12 +83,12 @@ public class SimpleQueue<E> extends MultiThreadedModule implements Queue {
 	}
 
 	protected boolean workWithElement(E element) {
-		boolean result = false;
+		boolean success = true;
 		for (QueueListener<E> listener : listeners) {
-			listener.handleElement(element);
-			result = true;
+			success &= listener.handleElement(element);
 		}
-		return result;
+		if (listeners.size() == 1) return success;
+		return listeners.size() > 0;
 	}
 
 }
