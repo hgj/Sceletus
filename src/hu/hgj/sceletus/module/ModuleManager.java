@@ -85,16 +85,19 @@ public class ModuleManager {
 				logger.error("Can not load module without 'name' or 'class'.");
 				return false;
 			}
-			Module module = ModuleManager.createModule(
-					(String) moduleConfiguration.get("name"),
-					(String) moduleConfiguration.get("class")
-			);
+			String moduleName = (String) moduleConfiguration.get("name");
+			String moduleClass = (String) moduleConfiguration.get("class");
+			if (moduleConfiguration.containsKey("enabled") && !((boolean) moduleConfiguration.get("enabled"))) {
+				logger.info("Not loading module '{}' as configuration says it should be disabled.", moduleName);
+				continue;
+			}
+			Module module = ModuleManager.createModule(moduleName, moduleClass);
 			if (module != null) {
 				if (moduleConfiguration.containsKey("configuration")) {
 					try {
 						module.updateConfiguration((Map<String, Object>) moduleConfiguration.get("configuration"));
 					} catch (ClassCastException exception) {
-						logger.error("Can not configure module '{}' ({}), as module's configuration is invalid.", moduleConfiguration.get("name"), moduleConfiguration.get("class"), exception);
+						logger.error("Can not configure module '{}' ({}), as module's configuration is invalid.",moduleName, moduleClass, exception);
 						return false;
 					}
 				}
