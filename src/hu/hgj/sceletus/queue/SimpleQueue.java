@@ -64,6 +64,7 @@ public class SimpleQueue<E> extends MultiThreadedModule implements Queue {
 				E element = queue.poll(1, TimeUnit.SECONDS);
 				if (element != null) {
 					if (!workWithElement(element)) {
+						logger.warn("Failed to work with element in queue, putting it back. Element is: {}", element.toString());
 						this.add(element);
 					}
 				}

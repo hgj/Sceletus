@@ -18,4 +18,9 @@ public class WithTopic<T> {
 		return topic.equals(otherWithTopic.topic) && value.equals(otherWithTopic.value);
 	}
 
+	@Override
+	public String toString() {
+		return "WithTopic{topic='" + topic + "', value=" + value + "}";
+	}
+
 }

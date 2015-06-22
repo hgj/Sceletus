@@ -16,7 +16,7 @@ public class ModuleManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(ModuleManager.class);
 
-	private static final ModuleRegistry<Module> moduleRegistry = new ModuleRegistry<>();
+	private static final ModuleRegistry<Module> moduleRegistry = new ModuleRegistry<>("Modules");
 
 	static {
 		Runtime.getRuntime().addShutdownHook(new Thread() {

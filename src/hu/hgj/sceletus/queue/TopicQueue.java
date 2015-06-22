@@ -79,6 +79,7 @@ public class TopicQueue<E> extends MultiThreadedModule implements Queue {
 				WithTopic<E> elementWithTopic = queue.poll(1, TimeUnit.SECONDS);
 				if (elementWithTopic != null) {
 					if (!workWithElement(elementWithTopic)) {
+						logger.warn("Failed to work with element in queue, putting it back. Element is: {}", elementWithTopic.toString());
 						this.add(elementWithTopic);
 					}
 				}

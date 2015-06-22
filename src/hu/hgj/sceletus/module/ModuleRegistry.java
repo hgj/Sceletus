@@ -11,11 +11,17 @@ public class ModuleRegistry<M extends Module> {
 
 	private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+	private final String name;
+
 	private final Map<String, M> modules = new ConcurrentHashMap<>();
+
+	public ModuleRegistry(String name) {
+		this.name = name;
+	}
 
 	public boolean register(M module) {
 		if (modules.putIfAbsent(module.getName(), module) != null) {
-			logger.warn("Not registering Module named '{}' as it is already registered.", module.getName());
+			logger.warn("Not registering Module named '{}' in ModuleRegistry '{}' as it is already registered.", module.getName(), name);
 			return false;
 		}
 		return true;
@@ -27,7 +33,7 @@ public class ModuleRegistry<M extends Module> {
 				return true;
 			} else {
 				remove(module);
-				logger.warn("Not registering Module named '{}' as it failed to be started.", module.getName());
+				logger.warn("Not registering Module named '{}' in ModuleRegistry '{}' as it failed to be started.", module.getName(), name);
 				return false;
 			}
 		} else {

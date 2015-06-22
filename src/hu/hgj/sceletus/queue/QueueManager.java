@@ -4,9 +4,9 @@ import hu.hgj.sceletus.module.ModuleRegistry;
 
 public class QueueManager {
 
-	public static final ModuleRegistry<SimpleQueue> simpleQueueRegistry = new ModuleRegistry<>();
+	public static final ModuleRegistry<SimpleQueue> simpleQueueRegistry = new ModuleRegistry<>("SimpleQueues");
 
-	public static final ModuleRegistry<TopicQueue> topicQueueRegistry = new ModuleRegistry<>();
+	public static final ModuleRegistry<TopicQueue> topicQueueRegistry = new ModuleRegistry<>("TopicQueues");
 
 	public static void waitForEmptyQueue(Queue queue) throws InterruptedException {
 		waitForEmptyQueue(queue, 100);
