@@ -20,7 +20,7 @@ public class WithTopic<T> {
 
 	@Override
 	public String toString() {
-		return "WithTopic{topic='" + topic + "', value=" + value + "}";
+		return "WithTopic{topic='" + topic + "', value='" + value + "'}";
 	}
 
 }
