@@ -15,7 +15,7 @@ public interface Module {
 
 	State getState();
 
-	boolean updateConfiguration(Map<String, Object> configurationMap);
+	boolean updateConfiguration(Object configuration);
 
 	boolean reset();
 

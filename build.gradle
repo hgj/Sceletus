@@ -3,7 +3,7 @@ apply plugin: 'application'
 
 sourceCompatibility = '1.8'
 
-mainClassName = 'Main'
+mainClassName = 'hu.hgj.sceletus.Main'
 
 sourceSets {
 	main.java.srcDir 'src'
@@ -19,7 +19,7 @@ repositories {
 dependencies {
 	compile 'org.slf4j:slf4j-api:1.7.+'
 	compile 'ch.qos.logback:logback-classic:1.+'
-	compile 'com.fasterxml.jackson.core:jackson-databind:2.+'
+	compile 'com.jayway.jsonpath:json-path:2.+'
 	compile fileTree(dir: 'lib', include: ['*.jar'])
 	testCompile 'junit:junit:4.+'
 }

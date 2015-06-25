@@ -1,6 +1,7 @@
 package hu.hgj.sceletus.module;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,13 +11,12 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 public class ModuleManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(ModuleManager.class);
 
-	private static final ModuleRegistry<Module> moduleRegistry = new ModuleRegistry<>("Modules");
+	public static final ModuleRegistry<Module> moduleRegistry = new ModuleRegistry<>("Modules");
 
 	static {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -60,58 +60,61 @@ public class ModuleManager {
 		return null;
 	}
 
-	public static boolean loadModules(File configurationFile) throws IOException {
-		ObjectMapper objectMapper = new ObjectMapper();
-		Map<String, Object> configurationMap;
-		try {
-			configurationMap = (Map<String, Object>) objectMapper.readValue(configurationFile, Map.class);
-		} catch (ClassCastException exception) {
-			logger.error("Can not load modules, as configuration is invalid.", exception);
+	public static List<Object> parseModulesConfiguration(File configurationFile) throws IOException {
+		return JsonPath.read(configurationFile, "$.modules[*]");
+	}
+
+	public static boolean createModules(List<Object> modulesConfiguration) {
+		if (modulesConfiguration.size() == 0) {
 			return false;
 		}
-		if (!configurationMap.containsKey("modules")) {
-			logger.error("Can not load any modules, as configuration does not contain 'modules' part.");
-			return false;
-		}
-		List<Map<String, Object>> modulesConfiguration;
-		try {
-			modulesConfiguration = (List<Map<String, Object>>) configurationMap.get("modules");
-		} catch (ClassCastException exception) {
-			logger.error("Can not load modules, as configuration's 'modules' part is invalid.", exception);
-			return false;
-		}
-		for (Map<String, Object> moduleConfiguration : modulesConfiguration) {
-			if (!moduleConfiguration.containsKey("name") || !moduleConfiguration.containsKey("class")) {
+		for (Object moduleConfiguration : modulesConfiguration) {
+			String moduleName;
+			String moduleClass;
+			try {
+				moduleName = JsonPath.read(moduleConfiguration, "$.name");
+				moduleClass = JsonPath.read(moduleConfiguration, "$.class");
+			} catch (PathNotFoundException exception) {
 				logger.error("Can not load module without 'name' or 'class'.");
 				return false;
 			}
-			String moduleName = (String) moduleConfiguration.get("name");
-			String moduleClass = (String) moduleConfiguration.get("class");
-			if (moduleConfiguration.containsKey("enabled") && !((boolean) moduleConfiguration.get("enabled"))) {
+			boolean moduleEnabled = true;
+			try {
+				moduleEnabled = JsonPath.read(moduleConfiguration, "$.enabled");
+			} catch (PathNotFoundException exception) {
+				// Ignore and leave module enabled
+			}
+			try {
+				moduleEnabled = !((boolean) JsonPath.read(moduleConfiguration, "$.disabled"));
+			} catch (PathNotFoundException exception) {
+				// Ignore and leave module enabled
+			}
+			if (!moduleEnabled) {
 				logger.info("Not loading module '{}' as configuration says it should be disabled.", moduleName);
 				continue;
 			}
-			Module module = ModuleManager.createModule(moduleName, moduleClass);
+			Module module = createModule(moduleName, moduleClass);
 			if (module != null) {
-				if (moduleConfiguration.containsKey("configuration")) {
-					try {
-						module.updateConfiguration((Map<String, Object>) moduleConfiguration.get("configuration"));
-					} catch (ClassCastException exception) {
-						logger.error("Can not configure module '{}' ({}), as module's configuration is invalid.",moduleName, moduleClass, exception);
+				try {
+					Object customModuleConfiguration = JsonPath.read(moduleConfiguration, "$.configuration");
+					if (!module.updateConfiguration(customModuleConfiguration)) {
+						logger.error("Failed to configure module '{}' ({}).", moduleName, moduleClass);
 						return false;
 					}
+				} catch (PathNotFoundException exception) {
+					logger.info("No custom configuration found for module '{}' ({}). Not configuring.", moduleName, moduleClass);
 				}
 				moduleRegistry.register(module);
 			} else {
-				logger.error("Failed to create module '{}'.", moduleConfiguration.get("name"));
+				logger.error("Failed to create module '{}' ({}).", moduleName, moduleClass);
 				return false;
 			}
 		}
 		return true;
 	}
 
-	public static boolean loadAndStartModules(File configurationFile) throws IOException {
-		if (loadModules(configurationFile)) {
+	public static boolean createAndStartModules(List<Object> modulesConfiguration) throws IOException {
+		if (createModules(modulesConfiguration)) {
 			boolean allStarted = true;
 			for (Module module : moduleRegistry.getAll()) {
 				allStarted &= module.start();

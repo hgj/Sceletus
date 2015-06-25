@@ -1,10 +1,11 @@
 package hu.hgj.sceletus.module;
 
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 public abstract class MultiThreadedModule extends AbstractModuleAdapter {
@@ -27,15 +28,12 @@ public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 	}
 
 	@Override
-	public boolean updateConfiguration(Map<String, Object> configurationMap) {
-		String fieldName = "threadJoinTimeout";
-		if (configurationMap.containsKey(fieldName)) {
-			try {
-				threadJoinTimeout = (int) configurationMap.get(fieldName);
-			} catch (ClassCastException exception) {
-				logger.warn("Configuration for '{}' should be an integer.", fieldName, exception);
-				return false;
-			}
+	public boolean updateConfiguration(Object configuration) {
+		String fieldName = "sceletus.threadJoinTimeout";
+		try {
+			threadJoinTimeout = JsonPath.read(configuration, "$." + fieldName);
+		} catch (PathNotFoundException exception) {
+			// Ignore, as this is optional
 		}
 		return true;
 	}

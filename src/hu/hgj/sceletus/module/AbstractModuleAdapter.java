@@ -1,7 +1,5 @@
 package hu.hgj.sceletus.module;
 
-import java.util.Map;
-
 public abstract class AbstractModuleAdapter extends AbstractModule {
 
 	public AbstractModuleAdapter(String name) {
@@ -9,7 +7,7 @@ public abstract class AbstractModuleAdapter extends AbstractModule {
 	}
 
 	@Override
-	public boolean updateConfiguration(Map<String, Object> configurationMap) {
+	public boolean updateConfiguration(Object configuration) {
 		return true;
 	}
 

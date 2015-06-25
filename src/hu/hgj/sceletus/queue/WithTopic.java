@@ -3,11 +3,11 @@ package hu.hgj.sceletus.queue;
 public class WithTopic<T> {
 
 	public final String topic;
-	public final T value;
+	public final T element;
 
 	public WithTopic(String topic, T value) {
 		this.topic = topic;
-		this.value = value;
+		this.element = value;
 	}
 
 	@Override
@@ -15,12 +15,12 @@ public class WithTopic<T> {
 		if (this == other) return true;
 		if (other == null || getClass() != other.getClass()) return false;
 		WithTopic<?> otherWithTopic = (WithTopic<?>) other;
-		return topic.equals(otherWithTopic.topic) && value.equals(otherWithTopic.value);
+		return topic.equals(otherWithTopic.topic) && element.equals(otherWithTopic.element);
 	}
 
 	@Override
 	public String toString() {
-		return "WithTopic{topic='" + topic + "', value='" + value + "'}";
+		return "WithTopic{topic='" + topic + "', element='" + element + "'}";
 	}
 
 }
