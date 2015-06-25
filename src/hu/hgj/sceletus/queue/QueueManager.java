@@ -88,7 +88,7 @@ public class QueueManager {
 			}
 			boolean keepElements = false;
 			try {
-				workers = JsonPath.read(queueConfiguration, "$.keepElements");
+				keepElements = JsonPath.read(queueConfiguration, "$.keepElements");
 			} catch (PathNotFoundException exception) {
 				// Ignore and leave module enabled
 			}
