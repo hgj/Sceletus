@@ -55,7 +55,7 @@ public abstract class ProducerModule<O> extends MultiThreadedModule {
 	@Override
 	protected void main(int threadID) {
 		long sleepTimeMilli = 1_000 * sleepTimeSeconds;
-		long sleepTimeNano = sleepTimeMilli * 1_000_000_000;
+		long sleepTimeNano = sleepTimeMilli * 1_000_000;
 		long lastRunEnded = System.nanoTime() - sleepTimeNano - 10;
 		while (running) {
 			// Get all tickets
