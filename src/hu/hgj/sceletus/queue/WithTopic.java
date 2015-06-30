@@ -19,6 +19,11 @@ public class WithTopic<T> {
 	}
 
 	@Override
+	public int hashCode() {
+		return 41 * topic.hashCode() + element.hashCode();
+	}
+
+	@Override
 	public String toString() {
 		return "WithTopic{topic='" + topic + "', element='" + element + "'}";
 	}
