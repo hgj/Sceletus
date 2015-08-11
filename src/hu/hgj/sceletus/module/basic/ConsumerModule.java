@@ -13,12 +13,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public abstract class ConverterModule<I, O> extends AbstractModuleAdapter implements TopicQueueListener<I> {
+public abstract class ConsumerModule<I> extends AbstractModuleAdapter implements TopicQueueListener<I> {
 
 	protected TopicQueue<I> inputQueue = null;
-	protected TopicQueue<O> outputQueue = null;
 
-	public ConverterModule(String name) {
+	public ConsumerModule(String name) {
 		super(name);
 	}
 
@@ -42,35 +41,19 @@ public abstract class ConverterModule<I, O> extends AbstractModuleAdapter implem
 		} catch (Exception exception) {
 			logger.error("Failed to configure input queue.", exception);
 		}
-		try {
-			outputQueue = ModuleManager.getConfiguredQueue(configuration, "$.output");
-		} catch (Exception exception) {
-			logger.error("Failed to configure output queue.", exception);
-		}
 		return true;
 	}
 
 	@Override
 	public boolean handleElement(WithTopic<I> elementWithTopic) {
-		List<WithTopic<O>> outputElements = null;
 		try {
-			outputElements = convertElement(elementWithTopic);
+			return consumeElement(elementWithTopic);
 		} catch (Throwable throwable) {
-			logger.warn("Exception caught while trying to convert elements.", throwable);
-		}
-		if (outputElements == null) {
-			logger.warn("Failed to convert elements.");
+			logger.warn("Exception caught while trying to consume element.", throwable);
 			return false;
-		} else {
-			// We can not do much about an unsuccessful add here... :(
-			outputElements.forEach(outputQueue::add);
-			if (outputElements.size() > 0) {
-				logger.info("Converted {} elements from queue '{}' to queue '{}'.", outputElements.size(), inputQueue.getName(), outputQueue.getName());
-			}
-			return true;
 		}
 	}
 
-	protected abstract List<WithTopic<O>> convertElement(WithTopic<I> inputElement);
+	protected abstract boolean consumeElement(WithTopic<I> inputElement);
 
 }

@@ -1,5 +1,7 @@
 package hu.hgj.sceletus.queue;
 
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.PathNotFoundException;
 import hu.hgj.sceletus.module.MultiThreadedModule;
 
 import java.util.LinkedHashSet;
@@ -28,17 +30,44 @@ public class SimpleTopicQueue<E> extends MultiThreadedModule implements TopicQue
 	}
 
 	protected final BlockingQueue<WithTopic<E>> queue = new LinkedBlockingQueue<>();
-	protected final int workers;
-	protected final boolean allowDuplicates;
-	protected final boolean keepElements;
+	protected int workers = 1;
+	protected boolean allowDuplicates = false;
+	protected boolean keepElements = true;
 	protected final Map<TopicQueueListener<E>, Set<Pattern>> listeners = new ConcurrentHashMap<>();
 	protected final Map<String, Set<TopicQueueListener<E>>> filtersCache = new ConcurrentHashMap<>();
+
+	public SimpleTopicQueue(String name) {
+		super(name);
+	}
 
 	public SimpleTopicQueue(String name, int workers, boolean allowDuplicates, boolean keepElements) {
 		super(name);
 		this.workers = workers;
 		this.allowDuplicates = allowDuplicates;
 		this.keepElements = keepElements;
+	}
+
+	@Override
+	public boolean updateConfiguration(Object configuration) {
+		if (!super.updateConfiguration(configuration)) {
+			return false;
+		}
+		try {
+			workers = JsonPath.read(configuration, "$.workers");
+		} catch (PathNotFoundException ignored) {
+			// Ignore, stick to the default
+		}
+		try {
+			allowDuplicates = JsonPath.read(configuration, "$.allowDuplicates");
+		} catch (PathNotFoundException ignored) {
+			// Ignore, stick to the default
+		}
+		try {
+			keepElements = JsonPath.read(configuration, "$.keepElements");
+		} catch (PathNotFoundException ignored) {
+			// Ignore, stick to the default
+		}
+		return true;
 	}
 
 	public BlockingQueue<WithTopic<E>> getQueue() {
@@ -55,7 +84,7 @@ public class SimpleTopicQueue<E> extends MultiThreadedModule implements TopicQue
 
 	public boolean add(WithTopic<E> elementWithTopic) {
 		if (!allowDuplicates && queue.contains(elementWithTopic)) {
-			logger.info("Not adding element with topic {} to queue '{}' as it is a duplicate.", elementWithTopic.toString(), getName());
+			logger.trace("Not adding element with topic {} to queue '{}' as it is a duplicate.", elementWithTopic.toString(), getName());
 			return false;
 		}
 		if (queue.offer(elementWithTopic)) {
@@ -146,7 +175,12 @@ public class SimpleTopicQueue<E> extends MultiThreadedModule implements TopicQue
 		}
 		boolean success = true;
 		for (TopicQueueListener<E> listener : affectedListeners) {
-			success &= listener.handleElement(elementWithTopic);
+			try {
+				success &= listener.handleElement(elementWithTopic);
+			} catch (Throwable throwable) {
+				logger.warn("Exception caught while handling element.", throwable);
+				success &= false;
+			}
 		}
 		if (affectedListeners.size() == 1) return success;
 		return affectedListeners.size() > 0;

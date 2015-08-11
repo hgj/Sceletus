@@ -1,7 +1,6 @@
 package hu.hgj.sceletus;
 
 import hu.hgj.sceletus.module.ModuleManager;
-import hu.hgj.sceletus.queue.QueueManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +18,7 @@ public class Main {
 		}
 		File configurationFile = new File(args[0]);
 		try {
-			if (!hu.hgj.sceletus.queue.QueueManager.createAndStartQueues(hu.hgj.sceletus.queue.QueueManager.parseQueuesConfiguration(configurationFile))) {
+			if (!ModuleManager.createAndStartQueues(ModuleManager.parseQueuesConfiguration(configurationFile))) {
 				System.err.println("Failed to start queues.");
 				System.exit(E_CONFIGURATION);
 			}
@@ -38,7 +37,7 @@ public class Main {
 		}
 		System.out.printf("Sceletus started up with %d modules and %d queues registered.",
 				ModuleManager.moduleRegistry.getAll().size(),
-				QueueManager.queueRegistry.getAll().size()
+				ModuleManager.queueRegistry.getAll().size()
 		);
 	}
 

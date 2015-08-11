@@ -2,8 +2,6 @@ package hu.hgj.sceletus.module;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -11,6 +9,7 @@ import java.util.concurrent.CountDownLatch;
 public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 
 	public int threadJoinTimeout = 2000;
+	public int threadRestartSleep = 5000;
 
 	protected ArrayList<Thread> threads;
 
@@ -22,18 +21,17 @@ public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 		super(name);
 	}
 
-	public MultiThreadedModule(String name, int timeout) {
-		super(name);
-		threadJoinTimeout = timeout;
-	}
-
 	@Override
 	public boolean updateConfiguration(Object configuration) {
-		String fieldName = "sceletus.threadJoinTimeout";
 		try {
-			threadJoinTimeout = JsonPath.read(configuration, "$." + fieldName);
-		} catch (PathNotFoundException exception) {
-			// Ignore, as this is optional
+			threadJoinTimeout = JsonPath.read(configuration, "$.sceletus.threadJoinTimeout");
+		} catch (PathNotFoundException ignored) {
+			// Ignore, stick to the default
+		}
+		try {
+			threadRestartSleep = JsonPath.read(configuration, "$.sceletus.threadRestartSleep");
+		} catch (PathNotFoundException ignored) {
+			// Ignore, stick to the default
 		}
 		return true;
 	}
@@ -59,9 +57,23 @@ public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 			final int finalThreadID = threadID;
 			String threadName = nameThread(threadID);
 			Thread thread = new Thread(() -> {
-				threadStartedLatch.countDown();
-				LoggerFactory.getLogger(this.getClass()).debug("Starting thread '{}'", threadName);
-				MultiThreadedModule.this.main(finalThreadID);
+				while (running) {
+					logger.info("Starting thread '{}'", threadName);
+					try {
+						threadStartedLatch.countDown();
+						MultiThreadedModule.this.main(finalThreadID);
+					} catch (Throwable throwable) {
+						logger.error("Exception caught while running thread '{}' of module.", threadName, throwable);
+					}
+					// Sleep before restarting thread
+					if (running) {
+						try {
+							Thread.sleep(threadRestartSleep);
+						} catch (InterruptedException ignored) {
+							// Ignore
+						}
+					}
+				}
 			});
 			threads.add(threadID, thread);
 			thread.setName(threadName);
@@ -79,7 +91,6 @@ public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 
 	@Override
 	protected boolean doStop() {
-		Logger logger = LoggerFactory.getLogger(this.getClass());
 		logger.debug("Stopping {} threads.", threads.size());
 		running = false;
 		// Join threads with interruption

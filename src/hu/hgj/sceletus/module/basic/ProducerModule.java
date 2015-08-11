@@ -2,14 +2,12 @@ package hu.hgj.sceletus.module.basic;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+import hu.hgj.sceletus.module.ModuleManager;
 import hu.hgj.sceletus.module.MultiThreadedModule;
-import hu.hgj.sceletus.queue.QueueManager;
-import hu.hgj.sceletus.queue.SimpleTopicQueue;
 import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.WithTopic;
 
 import java.util.List;
-import java.util.function.Function;
 
 public abstract class ProducerModule<O> extends MultiThreadedModule {
 
@@ -21,23 +19,15 @@ public abstract class ProducerModule<O> extends MultiThreadedModule {
 		super(name);
 	}
 
-	protected boolean configureOutputQueue(Object configuration, Function<String, ? extends TopicQueue<O>> queueProvider) {
-		return configureOutputQueue(configuration, "$.output", queueProvider);
-	}
-
-	protected boolean configureOutputQueue(Object configuration, String path, Function<String, ? extends TopicQueue<O>> queueProvider) {
-		outputQueue = QueueManager.configureQueue(configuration, path, queueProvider);
-		return outputQueue != null;
-	}
-
 	@Override
 	public boolean updateConfiguration(Object configuration) {
 		if (!super.updateConfiguration(configuration)) {
 			return false;
 		}
-		// We have absolutely no clue what will happen with the output queue...
-		if (!configureOutputQueue(configuration, s -> new SimpleTopicQueue<>(s, 1, true, false))) {
-			return false;
+		try {
+			outputQueue = ModuleManager.getConfiguredQueue(configuration, "$.output");
+		} catch (Exception exception) {
+			logger.error("Failed to configure output queue.", exception);
 		}
 		try {
 			sleepTimeSeconds = JsonPath.read(configuration, "$.sleepTime");
@@ -58,9 +48,14 @@ public abstract class ProducerModule<O> extends MultiThreadedModule {
 		long sleepTimeNano = sleepTimeMilli * 1_000_000;
 		long lastRunEnded = System.nanoTime() - sleepTimeNano - 10;
 		while (running) {
-			// Get all tickets
+			// Produce output if we did sleep enough
 			if (System.nanoTime() - lastRunEnded > sleepTimeNano) {
-				List<WithTopic<O>> outputs = produceOutput();
+				List<WithTopic<O>> outputs = null;
+				try {
+					outputs = produceOutput();
+				} catch (Throwable throwable) {
+					logger.warn("Exception caught while trying to produce output.", throwable);
+				}
 				lastRunEnded = System.nanoTime();
 				if (outputs == null) {
 					logger.warn("Failed to produce output.");

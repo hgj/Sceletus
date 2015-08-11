@@ -1,5 +1,7 @@
 package hu.hgj.sceletus.queue;
 
+import java.util.Objects;
+
 public class WithTopic<T> {
 
 	public final String topic;
@@ -20,7 +22,7 @@ public class WithTopic<T> {
 
 	@Override
 	public int hashCode() {
-		return 41 * topic.hashCode() + element.hashCode();
+		return Objects.hash(topic, element);
 	}
 
 	@Override

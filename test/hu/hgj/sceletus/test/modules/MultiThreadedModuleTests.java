@@ -1,6 +1,5 @@
 package hu.hgj.sceletus.test.modules;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import hu.hgj.sceletus.module.Module;
 import hu.hgj.sceletus.module.MultiThreadedModule;
 import hu.hgj.sceletus.test.modules.helpers.ModuleHelper;
@@ -9,6 +8,7 @@ import hu.hgj.sceletus.test.modules.implementations.SimpleMultiThreadedModule;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -19,12 +19,19 @@ public class MultiThreadedModuleTests {
 
 	@Test
 	public void testConfiguration() throws IOException {
-		ObjectMapper objectMapper = new ObjectMapper();
 		MultiThreadedModule module = new SimpleMultiThreadedModule("testModule", null, 0);
-		String fieldName =  "threadJoinTimeout";
-		int timeout = 5000;
-		module.updateConfiguration(objectMapper.readValue("{\"" + fieldName + "\":" + timeout + "}", Map.class));
+		String threadJoinTimeoutFieldName =  "threadJoinTimeout";
+		String threadRestartSleepFieldName =  "threadRestartSleep";
+		int timeout = 1234;
+		Map<String, Object> configuration = new HashMap<String, Object>() {{
+			put("sceletus", new HashMap<String, Object>() {{
+				put(threadJoinTimeoutFieldName, timeout);
+				put(threadRestartSleepFieldName, timeout);
+			}});
+		}};
+		module.updateConfiguration(configuration);
 		assertEquals("MultiThreadedModule's threadJoinTimeout field should be updated to " + timeout, timeout, module.threadJoinTimeout);
+		assertEquals("MultiThreadedModule's threadRestartSleep field should be updated to " + timeout, timeout, module.threadRestartSleep);
 	}
 
 	@Test
