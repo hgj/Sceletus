@@ -8,8 +8,19 @@ import java.util.concurrent.CountDownLatch;
 
 public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 
-	public int threadJoinTimeout = 2000;
-	public int threadRestartSleep = 5000;
+	public static long DEFAULT_THREAD_JOIN_TIMEOUT = 5000;
+	public static long DEFAULT_THREAD_RESTART_SLEEP = 5000;
+
+	protected long threadJoinTimeoutMilli = DEFAULT_THREAD_JOIN_TIMEOUT;
+	protected long threadRestartSleepMilli = DEFAULT_THREAD_RESTART_SLEEP;
+
+	public long getThreadJoinTimeoutMilli() {
+		return threadJoinTimeoutMilli;
+	}
+
+	public long getThreadRestartSleepMilli() {
+		return threadRestartSleepMilli;
+	}
 
 	protected ArrayList<Thread> threads;
 
@@ -21,15 +32,21 @@ public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 		super(name);
 	}
 
+	public MultiThreadedModule(String name, long threadJoinTimeoutMilli, long threadRestartSleepMilli) {
+		super(name);
+		this.threadJoinTimeoutMilli = threadJoinTimeoutMilli;
+		this.threadRestartSleepMilli = threadRestartSleepMilli;
+	}
+
 	@Override
 	public boolean updateConfiguration(Object configuration) {
 		try {
-			threadJoinTimeout = JsonPath.read(configuration, "$.sceletus.threadJoinTimeout");
+			threadJoinTimeoutMilli = JsonPath.read(configuration, "$.sceletus.threadJoinTimeout");
 		} catch (PathNotFoundException ignored) {
 			// Ignore, stick to the default
 		}
 		try {
-			threadRestartSleep = JsonPath.read(configuration, "$.sceletus.threadRestartSleep");
+			threadRestartSleepMilli = JsonPath.read(configuration, "$.sceletus.threadRestartSleep");
 		} catch (PathNotFoundException ignored) {
 			// Ignore, stick to the default
 		}
@@ -68,7 +85,7 @@ public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 					// Sleep before restarting thread
 					if (running) {
 						try {
-							Thread.sleep(threadRestartSleep);
+							Thread.sleep(threadRestartSleepMilli);
 						} catch (InterruptedException ignored) {
 							// Ignore
 						}
@@ -91,26 +108,29 @@ public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 
 	@Override
 	protected boolean doStop() {
-		logger.debug("Stopping {} threads.", threads.size());
-		running = false;
-		// Join threads with interruption
-		threads.stream().filter(Thread::isAlive).forEach(thread -> {
-			thread.interrupt();
-			try {
-				thread.join(threadJoinTimeout);
-			} catch (InterruptedException exception) {
-				logger.warn("Interrupted while waiting for thread '{}' to stop.", thread.getName(), exception);
-			}
-		});
 		boolean allThreadsStopped = true;
-		for (Thread thread : threads) {
-			if (thread.isAlive()) {
-				logger.warn("Module's thread '{}' is still alive.", thread.getName());
-				allThreadsStopped = false;
+		// NOTE: Need to test if threads exists when called from a finalizer thread.
+		if (threads != null) {
+			logger.debug("Stopping {} threads.", threads.size());
+			running = false;
+			// Join threads with interruption
+			threads.stream().filter(Thread::isAlive).forEach(thread -> {
+				thread.interrupt();
+				try {
+					thread.join(threadJoinTimeoutMilli);
+				} catch (InterruptedException exception) {
+					logger.warn("Interrupted while waiting for thread '{}' to stop.", thread.getName(), exception);
+				}
+			});
+			for (Thread thread : threads) {
+				if (thread.isAlive()) {
+					logger.warn("Module's thread '{}' is still alive.", thread.getName());
+					allThreadsStopped = false;
+				}
 			}
-		}
-		if (allThreadsStopped) {
-			logger.debug("All threads stopped.");
+			if (allThreadsStopped) {
+				logger.debug("All threads stopped.");
+			}
 		}
 		return allThreadsStopped;
 	}

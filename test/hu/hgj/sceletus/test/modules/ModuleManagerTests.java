@@ -2,7 +2,7 @@ package hu.hgj.sceletus.test.modules;
 
 import hu.hgj.sceletus.module.Module;
 import hu.hgj.sceletus.module.ModuleManager;
-import hu.hgj.sceletus.queue.SimpleTopicQueue;
+import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
 import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.test.modules.implementations.SimpleSingleThreadedModule;
 import org.junit.Test;

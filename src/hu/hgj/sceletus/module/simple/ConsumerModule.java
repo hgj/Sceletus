@@ -1,28 +1,54 @@
-package hu.hgj.sceletus.module.basic;
+package hu.hgj.sceletus.module.simple;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import hu.hgj.sceletus.module.AbstractModuleAdapter;
 import hu.hgj.sceletus.module.ModuleManager;
-import hu.hgj.sceletus.queue.SimpleTopicQueue;
 import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.TopicQueueListener;
 import hu.hgj.sceletus.queue.WithTopic;
+import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Base class for creating consumer like modules.
+ * <p>
+ * The module has an input queue configured with the {@code input} and
+ * {@code inputFilters} configuration values, where {@code input} is the name
+ * of the input queue and {@code inputFilters} is a list of filters.
+ * <p>
+ * The module executes {@link #handleElement(WithTopic)} for each received
+ * element from the input queue.
+ *
+ * @param <I> The type of the consumed element.
+ */
 public abstract class ConsumerModule<I> extends AbstractModuleAdapter implements TopicQueueListener<I> {
 
 	protected TopicQueue<I> inputQueue = null;
+
+	public static Set<String> DEFAULT_INPUT_QUEUE_FILTERS = SimpleTopicQueue.catchAllFilter;
 
 	public ConsumerModule(String name) {
 		super(name);
 	}
 
+	public ConsumerModule(String name, TopicQueue<I> inputQueue) {
+		super(name);
+		this.inputQueue = inputQueue;
+		this.inputQueue.subscribe(this, getInputQueueFilters());
+	}
+
+	public ConsumerModule(String name, TopicQueue<I> inputQueue, Set<String> inputQueueFilters) {
+		super(name);
+		this.inputQueue = inputQueue;
+		this.inputQueue.subscribe(this, inputQueueFilters);
+	}
+
 	protected Set<String> getInputQueueFilters() {
-		return SimpleTopicQueue.catchAllFilter;
+		return DEFAULT_INPUT_QUEUE_FILTERS;
 	}
 
 	@Override
@@ -54,6 +80,13 @@ public abstract class ConsumerModule<I> extends AbstractModuleAdapter implements
 		}
 	}
 
+	/**
+	 * Override to work with (consume) the incoming elements.
+	 *
+	 * @param inputElement The received element.
+	 *
+	 * @return See {@link TopicQueueListener#handleElement(WithTopic)}.
+	 */
 	protected abstract boolean consumeElement(WithTopic<I> inputElement);
 
 }

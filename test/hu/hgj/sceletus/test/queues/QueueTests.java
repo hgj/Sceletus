@@ -1,7 +1,7 @@
 package hu.hgj.sceletus.test.queues;
 
 import hu.hgj.sceletus.module.ModuleManager;
-import hu.hgj.sceletus.queue.SimpleTopicQueue;
+import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
 import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.WithTopic;
 import hu.hgj.sceletus.test.queues.helpers.Gatherer;

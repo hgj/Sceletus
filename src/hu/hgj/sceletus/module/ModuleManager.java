@@ -73,8 +73,8 @@ public class ModuleManager {
 		return JsonPath.read(configurationFile, "$.modules[*]");
 	}
 
-	public static boolean createQueues(List<Object> modulesConfiguration) {
-		return createAbstractModules(modulesConfiguration, queueRegistry);
+	public static boolean createQueues(List<Object> queuesConfiguration) {
+		return createAbstractModules(queuesConfiguration, queueRegistry);
 	}
 
 	public static boolean createModules(List<Object> modulesConfiguration) {

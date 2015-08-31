@@ -1,29 +1,61 @@
-package hu.hgj.sceletus.module.basic;
+package hu.hgj.sceletus.module.simple;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import hu.hgj.sceletus.module.AbstractModuleAdapter;
 import hu.hgj.sceletus.module.ModuleManager;
-import hu.hgj.sceletus.queue.SimpleTopicQueue;
 import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.TopicQueueListener;
 import hu.hgj.sceletus.queue.WithTopic;
+import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
 
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Base class for creating converter like modules.
+ * <p>
+ * The module has an input and an output queue configured with the
+ * {@code input}, {@code inputFilters} and {@code output} configuration values
+ * where {@code input} and {@code output} are the names of the input and output
+ * queues respectively and {@code inputFilters} is a list of filters for the
+ * input queue.
+ * <p>
+ * The module executes {@link #convertElement(WithTopic)} for each received
+ * element from the input queue. The method should return the new, converted
+ * element(s) or null on failure.
+ *
+ * @param <I> The type of the input element.
+ * @param <O> The type of the output element.
+ */
 public abstract class ConverterModule<I, O> extends AbstractModuleAdapter implements TopicQueueListener<I> {
 
 	protected TopicQueue<I> inputQueue = null;
 	protected TopicQueue<O> outputQueue = null;
 
+	public static Set<String> DEFAULT_INPUT_QUEUE_FILTERS = SimpleTopicQueue.catchAllFilter;
+
 	public ConverterModule(String name) {
 		super(name);
 	}
 
+	public ConverterModule(String name, TopicQueue<I> inputQueue, TopicQueue<O> outputQueue) {
+		super(name);
+		this.inputQueue = inputQueue;
+		this.inputQueue.subscribe(this, getInputQueueFilters());
+		this.outputQueue = outputQueue;
+	}
+
+	public ConverterModule(String name, TopicQueue<I> inputQueue, Set<String> inputQueueFilters, TopicQueue<O> outputQueue) {
+		super(name);
+		this.inputQueue = inputQueue;
+		this.inputQueue.subscribe(this, inputQueueFilters);
+		this.outputQueue = outputQueue;
+	}
+
 	protected Set<String> getInputQueueFilters() {
-		return SimpleTopicQueue.catchAllFilter;
+		return DEFAULT_INPUT_QUEUE_FILTERS;
 	}
 
 	@Override
@@ -71,6 +103,14 @@ public abstract class ConverterModule<I, O> extends AbstractModuleAdapter implem
 		}
 	}
 
+	/**
+	 * Override to work with (convert) the incoming elements.
+	 *
+	 * @param inputElement The received element.
+	 *
+	 * @return The list of new, converted elements (can be empty) or null on
+	 * failure.
+	 */
 	protected abstract List<WithTopic<O>> convertElement(WithTopic<I> inputElement);
 
 }

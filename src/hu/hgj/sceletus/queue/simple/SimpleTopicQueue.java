@@ -1,8 +1,11 @@
-package hu.hgj.sceletus.queue;
+package hu.hgj.sceletus.queue.simple;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import hu.hgj.sceletus.module.MultiThreadedModule;
+import hu.hgj.sceletus.queue.TopicQueue;
+import hu.hgj.sceletus.queue.TopicQueueListener;
+import hu.hgj.sceletus.queue.WithTopic;
 
 import java.util.LinkedHashSet;
 import java.util.Map;

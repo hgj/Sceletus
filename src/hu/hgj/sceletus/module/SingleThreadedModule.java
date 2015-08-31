@@ -6,6 +6,10 @@ public abstract class SingleThreadedModule extends MultiThreadedModule {
 		super(name);
 	}
 
+	public SingleThreadedModule(String name, long threadJoinTimeoutMilli, long threadRestartSleepMilli) {
+		super(name, threadJoinTimeoutMilli, threadRestartSleepMilli);
+	}
+
 	@Override
 	protected int getNumberOfThreads() {
 		return 1;

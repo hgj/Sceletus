@@ -30,8 +30,8 @@ public class MultiThreadedModuleTests {
 			}});
 		}};
 		module.updateConfiguration(configuration);
-		assertEquals("MultiThreadedModule's threadJoinTimeout field should be updated to " + timeout, timeout, module.threadJoinTimeout);
-		assertEquals("MultiThreadedModule's threadRestartSleep field should be updated to " + timeout, timeout, module.threadRestartSleep);
+		assertEquals("MultiThreadedModule's threadJoinTimeout field should be updated to " + timeout, timeout, module.getThreadJoinTimeoutMilli());
+		assertEquals("MultiThreadedModule's threadRestartSleep field should be updated to " + timeout, timeout, module.getThreadRestartSleepMilli());
 	}
 
 	@Test

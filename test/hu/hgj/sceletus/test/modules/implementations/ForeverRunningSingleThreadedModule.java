@@ -8,7 +8,7 @@ public class ForeverRunningSingleThreadedModule extends SimpleSingleThreadedModu
 
 	public ForeverRunningSingleThreadedModule(String name, Set<Integer> outputSet) {
 		super(name, outputSet);
-		this.threadJoinTimeout = 1000;
+		this.threadJoinTimeoutMilli = 1000;
 	}
 
 	@Override

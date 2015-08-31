@@ -1,6 +1,6 @@
 package hu.hgj.sceletus.test.queues.helpers;
 
-import hu.hgj.sceletus.queue.SimpleTopicQueue;
+import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
 import hu.hgj.sceletus.queue.WithTopic;
 
 public class RepeaterTopicQueue<E> extends SimpleTopicQueue<E> {
