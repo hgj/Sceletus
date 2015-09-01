@@ -34,7 +34,7 @@ public abstract class ConverterModule<I, O> extends AbstractModuleAdapter implem
 	protected TopicQueue<I> inputQueue = null;
 	protected TopicQueue<O> outputQueue = null;
 
-	public static Set<String> DEFAULT_INPUT_QUEUE_FILTERS = SimpleTopicQueue.catchAllFilter;
+	public static final Set<String> DEFAULT_INPUT_QUEUE_FILTERS = SimpleTopicQueue.catchAllFilter;
 
 	public ConverterModule(String name) {
 		super(name);

@@ -26,7 +26,7 @@ import java.util.List;
  */
 public abstract class ProducerModule<O> extends MultiThreadedModule {
 
-	public static long DEFAULT_SLEEP_TIME = 60;
+	public static final long DEFAULT_SLEEP_TIME = 60;
 
 	protected long sleepTimeSeconds = DEFAULT_SLEEP_TIME;
 	protected long sleepTimeNano = sleepTimeSeconds * 1_000_000_000;

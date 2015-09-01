@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DeduperModule<T> extends ConverterModule<T, T> {
 
-	public static long DEFAULT_DEDUPE_WINDOW = 60;
+	public static final long DEFAULT_DEDUPE_WINDOW = 60;
 
 	protected long dedupeWindowSeconds = DEFAULT_DEDUPE_WINDOW;
 	protected long dedupeWindowNano = dedupeWindowSeconds * 1_000_000_000;

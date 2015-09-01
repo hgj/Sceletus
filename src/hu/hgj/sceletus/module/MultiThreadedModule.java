@@ -8,8 +8,8 @@ import java.util.concurrent.CountDownLatch;
 
 public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 
-	public static long DEFAULT_THREAD_JOIN_TIMEOUT = 5000;
-	public static long DEFAULT_THREAD_RESTART_SLEEP = 5000;
+	public static final long DEFAULT_THREAD_JOIN_TIMEOUT = 5000;
+	public static final long DEFAULT_THREAD_RESTART_SLEEP = 5000;
 
 	protected long threadJoinTimeoutMilli = DEFAULT_THREAD_JOIN_TIMEOUT;
 	protected long threadRestartSleepMilli = DEFAULT_THREAD_RESTART_SLEEP;

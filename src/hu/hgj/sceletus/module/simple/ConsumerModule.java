@@ -29,7 +29,7 @@ public abstract class ConsumerModule<I> extends AbstractModuleAdapter implements
 
 	protected TopicQueue<I> inputQueue = null;
 
-	public static Set<String> DEFAULT_INPUT_QUEUE_FILTERS = SimpleTopicQueue.catchAllFilter;
+	public static final Set<String> DEFAULT_INPUT_QUEUE_FILTERS = SimpleTopicQueue.catchAllFilter;
 
 	public ConsumerModule(String name) {
 		super(name);
