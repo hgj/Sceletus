@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'findbugs'
 apply plugin: 'application'
 
 sourceCompatibility = '1.8'
@@ -22,6 +23,13 @@ dependencies {
 	compile 'com.jayway.jsonpath:json-path:2.+'
 	compile fileTree(dir: 'lib', include: ['*.jar'])
 	testCompile 'junit:junit:4.+'
+}
+
+tasks.withType(FindBugs) {
+	reports {
+		xml.enabled = false
+		html.enabled = true
+	}
 }
 
 task libs(type: Sync) {
@@ -62,4 +70,3 @@ clean.dependsOn(deleteDist)
 task wrapper(type: Wrapper) {
     gradleVersion = '2.6'
 }
-

@@ -23,7 +23,7 @@ public class ModuleHelper {
 	public static void testNThreadedModule(Module module, Set<Integer> outputSet, int threads) {
 		ModuleHelper.lifeCycleModule(module);
 		for (int i = 0; i < threads; i++) {
-			assertEquals(String.format("outputSet should contain Integer(%d)", i), true, outputSet.contains(new Integer(i)));
+			assertEquals(String.format("outputSet should contain Integer(%d)", i), true, outputSet.contains(Integer.valueOf(i)));
 		}
 	}
 

@@ -7,6 +7,7 @@ import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.TopicQueueListener;
 import hu.hgj.sceletus.queue.WithTopic;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -24,12 +25,16 @@ public class SimpleTopicQueue<E> extends MultiThreadedModule implements TopicQue
 	protected static final Set<Pattern> catchAllPattern;
 
 	static {
-		catchAllFilter = new LinkedHashSet<String>() {{
-			add(".*");
-		}};
-		catchAllPattern = new LinkedHashSet<Pattern>() {{
-			add(Pattern.compile(".*"));
-		}};
+		catchAllFilter = Collections.unmodifiableSet(
+				new LinkedHashSet<String>() {{
+					add(".*");
+				}}
+		);
+		catchAllPattern = Collections.unmodifiableSet(
+				new LinkedHashSet<Pattern>() {{
+					add(Pattern.compile(".*"));
+				}}
+		);
 	}
 
 	protected final BlockingQueue<WithTopic<E>> queue = new LinkedBlockingQueue<>();
