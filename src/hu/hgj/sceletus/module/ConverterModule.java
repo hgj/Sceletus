@@ -1,4 +1,4 @@
-package hu.hgj.sceletus.module.simple;
+package hu.hgj.sceletus.module;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
