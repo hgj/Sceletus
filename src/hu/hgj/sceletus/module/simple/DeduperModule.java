@@ -49,7 +49,7 @@ public class DeduperModule<T> extends ConverterModule<T, T> {
 			return false;
 		}
 		try {
-			dedupeWindowSeconds = JsonPath.read(configuration, "$.dedupeWindow");
+			dedupeWindowSeconds = ((Number) JsonPath.read(configuration, "$.dedupeWindow")).longValue();
 		} catch (PathNotFoundException ignored) {
 			// Use default
 		}

@@ -41,12 +41,12 @@ public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 	@Override
 	public boolean updateConfiguration(Object configuration) {
 		try {
-			threadJoinTimeoutMilli = JsonPath.read(configuration, "$.sceletus.threadJoinTimeout");
+			threadJoinTimeoutMilli = ((Number) JsonPath.read(configuration, "$.sceletus.threadJoinTimeout")).longValue();
 		} catch (PathNotFoundException ignored) {
 			// Ignore, stick to the default
 		}
 		try {
-			threadRestartSleepMilli = JsonPath.read(configuration, "$.sceletus.threadRestartSleep");
+			threadRestartSleepMilli = ((Number) JsonPath.read(configuration, "$.sceletus.threadRestartSleep")).longValue();
 		} catch (PathNotFoundException ignored) {
 			// Ignore, stick to the default
 		}

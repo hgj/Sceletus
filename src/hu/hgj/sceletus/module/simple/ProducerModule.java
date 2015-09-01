@@ -48,7 +48,7 @@ public abstract class ProducerModule<O> extends MultiThreadedModule {
 			logger.error("Failed to configure output queue.", exception);
 		}
 		try {
-			sleepTimeSeconds = JsonPath.read(configuration, "$.sleepTime");
+			sleepTimeSeconds = ((Number) JsonPath.read(configuration, "$.sleepTime")).longValue();
 		} catch (PathNotFoundException ignored) {
 			// Use default
 		}
