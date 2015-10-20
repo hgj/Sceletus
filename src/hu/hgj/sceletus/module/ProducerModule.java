@@ -2,8 +2,6 @@ package hu.hgj.sceletus.module;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import hu.hgj.sceletus.module.ModuleManager;
-import hu.hgj.sceletus.module.MultiThreadedModule;
 import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.WithTopic;
 
@@ -81,8 +79,9 @@ public abstract class ProducerModule<O> extends MultiThreadedModule {
 			}
 			// Sleep
 			try {
-				logger.debug("Sleeping for {} seconds.", sleepTimeSeconds);
+				// TODO: Test this loop, it behaves bad sometimes
 				long sleepNeeded = (sleepTimeNano - (System.nanoTime() - lastRunEnded)) / 1_000_000;
+				logger.debug("Sleeping for {} seconds ({} milliseconds right now).", sleepTimeSeconds, sleepNeeded);
 				Thread.sleep(sleepNeeded);
 			} catch (InterruptedException exception) {
 				logger.warn("Interrupted while sleeping.", exception);
