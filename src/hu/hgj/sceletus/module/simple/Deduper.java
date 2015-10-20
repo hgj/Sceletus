@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Deduper<T> {
 
-	public static final long DEFAULT_DEDUPE_WINDOW_NANO = TimeUnit.SECONDS.toNanos(60);
+	public static final long DEFAULT_DEDUPE_WINDOW_NANO = 0;
 
 	protected long dedupeWindowNano = DEFAULT_DEDUPE_WINDOW_NANO;
 
