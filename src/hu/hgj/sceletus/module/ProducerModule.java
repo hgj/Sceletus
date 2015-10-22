@@ -79,8 +79,7 @@ public abstract class ProducerModule<O> extends MultiThreadedModule {
 			}
 			// Sleep
 			try {
-				// TODO: Test this loop, it behaves bad sometimes
-				long sleepNeeded = (sleepTimeNano - (System.nanoTime() - lastRunEnded)) / 1_000_000;
+				long sleepNeeded = ((sleepTimeNano - (System.nanoTime() - lastRunEnded)) / 1_000_000) + 1;
 				logger.debug("Sleeping for {} seconds ({} milliseconds right now).", sleepTimeSeconds, sleepNeeded);
 				Thread.sleep(sleepNeeded);
 			} catch (InterruptedException exception) {
