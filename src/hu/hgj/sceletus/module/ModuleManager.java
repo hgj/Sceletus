@@ -184,9 +184,9 @@ public class ModuleManager {
 		}
 	}
 
-	public static <T, E> TopicQueue<T, E> getQueue(String queueName) {
+	public static <Q extends TopicQueue> Q getQueue(String queueName) {
 		try {
-			return (TopicQueue<T, E>) queueRegistry.get(queueName);
+			return (Q) queueRegistry.get(queueName);
 		} catch (ClassCastException exception) {
 			String error = "Can not get queue. Registered queue is not the right type.";
 			logger.error(error, exception);
@@ -194,7 +194,7 @@ public class ModuleManager {
 		}
 	}
 
-	public static <T, E> TopicQueue<T, E> getConfiguredQueue(Object configuration, String path) {
+	public static <Q extends TopicQueue> Q getConfiguredQueue(Object configuration, String path) {
 		try {
 			String queueName = JsonPath.read(configuration, path);
 			return getQueue(queueName);
@@ -205,13 +205,13 @@ public class ModuleManager {
 		}
 	}
 
-	public static <T, E> TopicQueue<T, E> getOrCreateQueue(String queueName, Function<String, ? extends TopicQueue<T, E>> queueSupplier) {
+	public static <Q extends TopicQueue> Q getOrCreateQueue(String queueName, Function<String, Q> queueSupplier) {
 		try {
-			TopicQueue<T, E> existingQueue = (TopicQueue<T, E>) queueRegistry.get(queueName);
+			Q existingQueue = getQueue(queueName);
 			if (existingQueue != null) {
 				return existingQueue;
 			} else {
-				TopicQueue<T, E> newQueue = queueSupplier.apply(queueName);
+				Q newQueue = queueSupplier.apply(queueName);
 				if (queueRegistry.register(newQueue)) {
 					return newQueue;
 				} else {
@@ -227,10 +227,10 @@ public class ModuleManager {
 		}
 	}
 
-	public static <T, E> TopicQueue<T, E> getOrCreateConfiguredQueue(Object configuration, String path, Function<String, ? extends TopicQueue<T, E>> queueProvider) {
+	public static <Q extends TopicQueue> Q getOrCreateConfiguredQueue(Object configuration, String path, Function<String, Q> queueSupplier) {
 		try {
 			String queueName = JsonPath.read(configuration, path);
-			return getOrCreateQueue(queueName, queueProvider);
+			return getOrCreateQueue(queueName, queueSupplier);
 		} catch (PathNotFoundException exception) {
 			logger.error("Can not configure queue. Missing configuration '{}'.", path, exception);
 			throw new RuntimeException("Can not configure queue.", exception);
