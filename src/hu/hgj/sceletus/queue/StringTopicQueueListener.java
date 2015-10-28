@@ -1,5 +1,9 @@
 package hu.hgj.sceletus.queue;
 
-public interface StringTopicQueueListener<E> extends TopicQueueListener<String, E> {
+public abstract class StringTopicQueueListener<E> implements TopicQueueListener<String,E> {
+
+	public boolean handleElement(WithStringTopic<E> elementWithStringTopic) {
+		return handleElement((WithTopic<String, E>) elementWithStringTopic);
+	}
 
 }
