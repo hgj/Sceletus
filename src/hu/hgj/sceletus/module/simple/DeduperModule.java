@@ -70,11 +70,11 @@ public class DeduperModule<T, E> extends ConverterModule<T, E, T, E> {
 	}
 
 	@Override
-	protected List<WithTopic<T, E>> convertElement(WithTopic<T, E> inputElement) {
-		if (deduper.dedupe(inputElement)) {
+	protected List<WithTopic<T, E>> convertElement(WithTopic<T, E> inputElementWithTopic) {
+		if (deduper.dedupe(inputElementWithTopic)) {
 			return Collections.emptyList();
 		} else {
-			return Collections.singletonList(inputElement);
+			return Collections.singletonList(inputElementWithTopic);
 		}
 	}
 

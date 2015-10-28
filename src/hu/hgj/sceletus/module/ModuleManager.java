@@ -184,7 +184,7 @@ public class ModuleManager {
 		}
 	}
 
-	public static <Q extends TopicQueue> Q getQueue(String queueName) {
+	public static <Q extends TopicQueue<?, ?>> Q getQueue(String queueName) {
 		try {
 			return (Q) queueRegistry.get(queueName);
 		} catch (ClassCastException exception) {
@@ -194,7 +194,7 @@ public class ModuleManager {
 		}
 	}
 
-	public static <Q extends TopicQueue> Q getConfiguredQueue(Object configuration, String path) {
+	public static <Q extends TopicQueue<?, ?>> Q getConfiguredQueue(Object configuration, String path) {
 		try {
 			String queueName = JsonPath.read(configuration, path);
 			return getQueue(queueName);
@@ -205,7 +205,7 @@ public class ModuleManager {
 		}
 	}
 
-	public static <Q extends TopicQueue> Q getOrCreateQueue(String queueName, Function<String, Q> queueSupplier) {
+	public static <Q extends TopicQueue<?, ?>> Q getOrCreateQueue(String queueName, Function<String, Q> queueSupplier) {
 		try {
 			Q existingQueue = getQueue(queueName);
 			if (existingQueue != null) {
@@ -227,7 +227,7 @@ public class ModuleManager {
 		}
 	}
 
-	public static <Q extends TopicQueue> Q getOrCreateConfiguredQueue(Object configuration, String path, Function<String, Q> queueSupplier) {
+	public static <Q extends TopicQueue<?, ?>> Q getOrCreateConfiguredQueue(Object configuration, String path, Function<String, Q> queueSupplier) {
 		try {
 			String queueName = JsonPath.read(configuration, path);
 			return getOrCreateQueue(queueName, queueSupplier);

@@ -8,7 +8,7 @@ import java.util.function.Predicate;
 
 public interface TopicQueue<T, E> extends Module {
 
-	BlockingQueue<WithTopic<T, E>> getQueue();
+	BlockingQueue<? extends WithTopic<T, E>> getQueue();
 
 	int size();
 
@@ -16,7 +16,7 @@ public interface TopicQueue<T, E> extends Module {
 
 	boolean add(WithTopic<T, E> elementWithTopic);
 
-	Map<TopicQueueListener<T, E>, Predicate<T>> getListeners();
+	Map<? extends TopicQueueListener<T, E>, Predicate<T>> getListeners();
 
 	void unSubscribe(TopicQueueListener<T, E> listener);
 
