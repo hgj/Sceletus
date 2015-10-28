@@ -101,7 +101,7 @@ public abstract class AbstractModule implements Module {
 	protected void finalize() throws Throwable {
 		super.finalize();
 		if (state == State.STARTED) {
-			logger.info("Module '{}' destroyed but still running. Stopping in finalize().", getName());
+			logger.info("Module '{}' destroyed but still in STARTED state. Stopping in finalize().", getName());
 			stop();
 		}
 	}

@@ -29,11 +29,16 @@ public class ModuleRegistry<M extends Module> {
 
 	public boolean registerAndStart(M module) {
 		if (register(module)) {
-			if (module.start()) {
-				return true;
-			} else {
-				remove(module);
-				logger.warn("Not registering Module named '{}' in ModuleRegistry '{}' as it failed to be started.", module.getName(), name);
+			try {
+				if (module.start()) {
+					return true;
+				} else {
+					remove(module);
+					logger.warn("Not registering Module named '{}' in ModuleRegistry '{}' as it failed to be started.", module.getName(), name);
+					return false;
+				}
+			} catch (Exception exception) {
+				logger.error("Exception caught while starting module '{}'.", module.getName(), exception);
 				return false;
 			}
 		} else {

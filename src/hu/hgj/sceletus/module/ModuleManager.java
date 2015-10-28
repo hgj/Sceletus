@@ -114,8 +114,13 @@ public class ModuleManager {
 			if (module != null) {
 				try {
 					Object customModuleConfiguration = JsonPath.read(moduleConfiguration, "$.configuration");
-					if (!module.updateConfiguration(customModuleConfiguration)) {
-						logger.error("Failed to configure module '{}' ({}).", moduleName, moduleClass);
+					try {
+						if (!module.updateConfiguration(customModuleConfiguration)) {
+							logger.error("Failed to configure module '{}' ({}).", moduleName, moduleClass);
+							return false;
+						}
+					} catch (Exception exception) {
+						logger.error("Failed to configure module (exception caught) '{}' ({}).", moduleName, moduleClass, exception);
 						return false;
 					}
 				} catch (PathNotFoundException exception) {
@@ -145,7 +150,12 @@ public class ModuleManager {
 		if (createAbstractModules(modulesConfiguration, registry)) {
 			boolean allStarted = true;
 			for (Module module : registry.getAll()) {
-				allStarted &= module.start();
+				try {
+					allStarted &= module.start();
+				} catch (Exception exception) {
+					logger.error("Exception caught while starting module '{}'.", module.getName(), exception);
+					allStarted = false;
+				}
 			}
 			return allStarted;
 		} else {
@@ -153,49 +163,49 @@ public class ModuleManager {
 		}
 	}
 
-	public static <M extends Module> M getModule(String moduleName) throws Exception {
+	public static <M extends Module> M getModule(String moduleName) {
 		try {
 			return (M) moduleRegistry.get(moduleName);
 		} catch (ClassCastException exception) {
 			String error = "Can not get module. Registered module is not the right type.";
 			logger.error(error, exception);
-			throw new Exception(error, exception);
+			throw new RuntimeException(error, exception);
 		}
 	}
 
-	public static <M extends Module> M getConfiguredModule(Object configuration, String path) throws Exception {
+	public static <M extends Module> M getConfiguredModule(Object configuration, String path) {
 		try {
 			String moduleName = JsonPath.read(configuration, path);
 			return getModule(moduleName);
 		} catch (PathNotFoundException exception) {
 			String error = "Can not get module. Missing configuration '" + path + "'.";
 			logger.error(error, exception);
-			throw new Exception(error, exception);
+			throw new RuntimeException(error, exception);
 		}
 	}
 
-	public static <T, E> TopicQueue<T, E> getQueue(String queueName) throws Exception {
+	public static <T, E> TopicQueue<T, E> getQueue(String queueName) {
 		try {
 			return (TopicQueue<T, E>) queueRegistry.get(queueName);
 		} catch (ClassCastException exception) {
 			String error = "Can not get queue. Registered queue is not the right type.";
 			logger.error(error, exception);
-			throw new Exception(error, exception);
+			throw new RuntimeException(error, exception);
 		}
 	}
 
-	public static <T, E> TopicQueue<T, E> getConfiguredQueue(Object configuration, String path) throws Exception {
+	public static <T, E> TopicQueue<T, E> getConfiguredQueue(Object configuration, String path) {
 		try {
 			String queueName = JsonPath.read(configuration, path);
 			return getQueue(queueName);
 		} catch (PathNotFoundException exception) {
 			String error = "Can not get queue. Missing configuration '" + path + "'.";
 			logger.error(error, exception);
-			throw new Exception(error, exception);
+			throw new RuntimeException(error, exception);
 		}
 	}
 
-	public static <T, E> TopicQueue<T, E> getOrCreateQueue(String queueName, Function<String, ? extends TopicQueue<T, E>> queueSupplier) throws Exception {
+	public static <T, E> TopicQueue<T, E> getOrCreateQueue(String queueName, Function<String, ? extends TopicQueue<T, E>> queueSupplier) {
 		try {
 			TopicQueue<T, E> existingQueue = (TopicQueue<T, E>) queueRegistry.get(queueName);
 			if (existingQueue != null) {
@@ -206,24 +216,24 @@ public class ModuleManager {
 					return newQueue;
 				} else {
 					logger.error("Failed to register queue '{}' ({}).", newQueue.getName(), newQueue.getClass().getCanonicalName());
-					throw new Exception("Failed to register queue.");
+					throw new RuntimeException("Failed to register queue.");
 				}
 			}
 		} catch (ClassCastException exception) {
 			logger.error("Requested queue '{}' already exists, but is not the right type (got {}).",
 					queueName, queueRegistry.get(queueName).getClass().getCanonicalName(), exception
 			);
-			throw new Exception("Requested queue already exists, but is not the right type.", exception);
+			throw new RuntimeException("Requested queue already exists, but is not the right type.", exception);
 		}
 	}
 
-	public static <T, E> TopicQueue<T, E> getOrCreateConfiguredQueue(Object configuration, String path, Function<String, ? extends TopicQueue<T, E>> queueProvider) throws Exception {
+	public static <T, E> TopicQueue<T, E> getOrCreateConfiguredQueue(Object configuration, String path, Function<String, ? extends TopicQueue<T, E>> queueProvider) {
 		try {
 			String queueName = JsonPath.read(configuration, path);
 			return getOrCreateQueue(queueName, queueProvider);
 		} catch (PathNotFoundException exception) {
 			logger.error("Can not configure queue. Missing configuration '{}'.", path, exception);
-			throw new Exception("Can not configure queue.", exception);
+			throw new RuntimeException("Can not configure queue.", exception);
 		}
 	}
 
@@ -240,7 +250,12 @@ public class ModuleManager {
 	public static boolean stopAbstractModules(Collection<Module> modules) {
 		boolean allStopped = true;
 		for (Module module : modules) {
-			allStopped &= module.stop();
+			try {
+				allStopped &= module.stop();
+			} catch (Exception exception) {
+				logger.error("Exception caught while stopping module '{}'.", module.getName(), exception);
+				allStopped = false;
+			}
 		}
 		return allStopped;
 	}
