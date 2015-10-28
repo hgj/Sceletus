@@ -153,10 +153,10 @@ public class ModuleManager {
 		}
 	}
 
-	public static <E> TopicQueue<E> getConfiguredQueue(Object configuration, String path) throws Exception {
+	public static <T, E> TopicQueue<T, E> getConfiguredQueue(Object configuration, String path) throws Exception {
 		try {
 			String queueName = JsonPath.read(configuration, path);
-			return (TopicQueue<E>) queueRegistry.get(queueName);
+			return (TopicQueue<T, E>) queueRegistry.get(queueName);
 		} catch (PathNotFoundException exception) {
 			String error = "Can not get queue. Missing configuration '" + path + "'.";
 			logger.error(error, exception);
@@ -168,13 +168,13 @@ public class ModuleManager {
 		}
 	}
 
-	public static <E> TopicQueue<E> getOrCreateQueue(String queueName, Function<String, ? extends TopicQueue<E>> queueSupplier) throws Exception {
+	public static <T, E> TopicQueue<T, E> getOrCreateQueue(String queueName, Function<String, ? extends TopicQueue<T, E>> queueSupplier) throws Exception {
 		try {
-			TopicQueue<E> existingQueue = (TopicQueue<E>) queueRegistry.get(queueName);
+			TopicQueue<T, E> existingQueue = (TopicQueue<T, E>) queueRegistry.get(queueName);
 			if (existingQueue != null) {
 				return existingQueue;
 			} else {
-				TopicQueue<E> newQueue = queueSupplier.apply(queueName);
+				TopicQueue<T, E> newQueue = queueSupplier.apply(queueName);
 				if (queueRegistry.register(newQueue)) {
 					return newQueue;
 				} else {
@@ -190,7 +190,7 @@ public class ModuleManager {
 		}
 	}
 
-	public static <E> TopicQueue<E> getOrCreateConfiguredQueue(Object configuration, String path, Function<String, ? extends TopicQueue<E>> queueProvider) throws Exception {
+	public static <T, E> TopicQueue<T, E> getOrCreateConfiguredQueue(Object configuration, String path, Function<String, ? extends TopicQueue<T, E>> queueProvider) throws Exception {
 		try {
 			String queueName = JsonPath.read(configuration, path);
 			return getOrCreateQueue(queueName, queueProvider);

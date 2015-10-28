@@ -1,7 +1,7 @@
 package hu.hgj.sceletus.queue;
 
-public interface TopicQueueListener<E> {
+public interface TopicQueueListener<T, E> {
 
-	boolean handleElement(WithTopic<E> elementWithTopic);
+	boolean handleElement(WithTopic<T, E> elementWithTopic);
 
 }

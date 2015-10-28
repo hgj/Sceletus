@@ -6,17 +6,17 @@ import hu.hgj.sceletus.queue.WithTopic;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Gatherer<E> implements TopicQueueListener<E> {
+public class Gatherer<T, E> implements TopicQueueListener<T, E> {
 
-	private final List<WithTopic<E>> storage;
+	private final List<WithTopic<T, E>> storage;
 	private AtomicInteger counter = new AtomicInteger(0);
 
-	public Gatherer(List<WithTopic<E>> storage) {
+	public Gatherer(List<WithTopic<T, E>> storage) {
 		this.storage = storage;
 	}
 
 	@Override
-	public boolean handleElement(WithTopic<E> elementWithTopic) {
+	public boolean handleElement(WithTopic<T, E> elementWithTopic) {
 		if (storage.add(elementWithTopic)) {
 			counter.incrementAndGet();
 			return true;

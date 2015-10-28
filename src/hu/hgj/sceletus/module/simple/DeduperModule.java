@@ -24,12 +24,13 @@ import java.util.concurrent.TimeUnit;
  * the {@code dedupeWindow} long deduplication window. A window size of zero
  * means "infinite".
  *
- * @param <T> The type of input (and thus, the output) element.
+ * @param <T> The type of input (and thus, the output) topic.
+ * @param <E> The type of input (and thus, the output) element.
  * @see ConverterModule
  */
-public class DeduperModule<T> extends ConverterModule<T, T> {
+public class DeduperModule<T, E> extends ConverterModule<T, E, T, E> {
 
-	protected Deduper<WithTopic<T>> deduper = new Deduper<>();
+	protected Deduper<WithTopic<T, E>> deduper = new Deduper<>();
 
 	public DeduperModule(String name) {
 		super(name);
@@ -69,7 +70,7 @@ public class DeduperModule<T> extends ConverterModule<T, T> {
 	}
 
 	@Override
-	protected List<WithTopic<T>> convertElement(WithTopic<T> inputElement) {
+	protected List<WithTopic<T, E>> convertElement(WithTopic<T, E> inputElement) {
 		if (deduper.dedupe(inputElement)) {
 			return Collections.emptyList();
 		} else {

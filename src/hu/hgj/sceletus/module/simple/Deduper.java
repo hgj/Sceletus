@@ -3,7 +3,7 @@ package hu.hgj.sceletus.module.simple;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-public class Deduper<T> {
+public class Deduper<E> {
 
 	public static final long DEFAULT_DEDUPE_WINDOW_NANO = 0;
 
@@ -21,7 +21,7 @@ public class Deduper<T> {
 		this.dedupeWindowNano = timeUnit.toNanos(duration);
 	}
 
-	protected ConcurrentHashMap<T, Long> cache = new ConcurrentHashMap<>();
+	protected ConcurrentHashMap<E, Long> cache = new ConcurrentHashMap<>();
 
 	public Deduper() {
 	}
@@ -34,7 +34,7 @@ public class Deduper<T> {
 		setDedupeWindow(duration, timeUnit);
 	}
 
-	public boolean isDuplicate(T element) {
+	public boolean isDuplicate(E element) {
 		if (cache.containsKey(element)) {
 			if (dedupeWindowNano == 0 || (System.nanoTime() - cache.get(element)) < dedupeWindowNano) {
 				return true;
@@ -43,7 +43,7 @@ public class Deduper<T> {
 		return false;
 	}
 
-	public boolean dedupe(T element) {
+	public boolean dedupe(E element) {
 		if (isDuplicate(element)) {
 			if (dedupeWindowNano != 0) {
 				// NOTE: We do not update timestamps if the window is "infinite"

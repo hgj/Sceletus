@@ -3,24 +3,25 @@ package hu.hgj.sceletus.queue;
 import hu.hgj.sceletus.module.Module;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.regex.Pattern;
+import java.util.function.Predicate;
 
-public interface TopicQueue<E> extends Module {
+public interface TopicQueue<T, E> extends Module {
 
-	BlockingQueue<WithTopic<E>> getQueue();
+	BlockingQueue<WithTopic<T, E>> getQueue();
 
 	int size();
 
-	boolean add(String topic, E element);
+	boolean add(T topic, E element);
 
-	boolean add(WithTopic<E> elementWithTopic);
+	boolean add(WithTopic<T, E> elementWithTopic);
 
-	Map<TopicQueueListener<E>, Set<Pattern>> getListeners();
+	Map<TopicQueueListener<T, E>, Predicate<T>> getListeners();
 
-	void unSubscribe(TopicQueueListener<E> listener);
+	void unSubscribe(TopicQueueListener<T, E> listener);
 
-	void subscribe(TopicQueueListener<E> listener, Set<String> filters);
+	void subscribe(TopicQueueListener<T, E> listener);
+
+	void subscribe(TopicQueueListener<T, E> listener, Predicate<T> filter);
 
 }

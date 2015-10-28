@@ -7,7 +7,6 @@ import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.TopicQueueListener;
 import hu.hgj.sceletus.queue.WithTopic;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -15,34 +14,20 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
-public class SimpleTopicQueue<E> extends MultiThreadedModule implements TopicQueue<E> {
+public class SimpleTopicQueue<T, E> extends MultiThreadedModule implements TopicQueue<T, E> {
 
-	public static final Set<String> catchAllFilter;
-	protected static final Set<Pattern> catchAllPattern;
-
-	static {
-		catchAllFilter = Collections.unmodifiableSet(
-				new LinkedHashSet<String>() {{
-					add(".*");
-				}}
-		);
-		catchAllPattern = Collections.unmodifiableSet(
-				new LinkedHashSet<Pattern>() {{
-					add(Pattern.compile(".*"));
-				}}
-		);
+	public static boolean catchAllFilter(Object topic) {
+		return true;
 	}
 
-	protected final BlockingQueue<WithTopic<E>> queue = new LinkedBlockingQueue<>();
+	protected final BlockingQueue<WithTopic<T, E>> queue = new LinkedBlockingQueue<>();
 	protected int workers = 1;
 	protected boolean allowDuplicates = false;
 	protected boolean keepElements = true;
-	protected final Map<TopicQueueListener<E>, Set<Pattern>> listeners = new ConcurrentHashMap<>();
-	protected final Map<String, Set<TopicQueueListener<E>>> filtersCache = new ConcurrentHashMap<>();
+	protected final Map<TopicQueueListener<T, E>, Predicate<T>> listeners = new ConcurrentHashMap<>();
+	protected final Map<T, Set<TopicQueueListener<T, E>>> filtersCache = new ConcurrentHashMap<>();
 
 	public SimpleTopicQueue(String name) {
 		super(name);
@@ -78,7 +63,7 @@ public class SimpleTopicQueue<E> extends MultiThreadedModule implements TopicQue
 		return true;
 	}
 
-	public BlockingQueue<WithTopic<E>> getQueue() {
+	public BlockingQueue<WithTopic<T, E>> getQueue() {
 		return queue;
 	}
 
@@ -86,11 +71,11 @@ public class SimpleTopicQueue<E> extends MultiThreadedModule implements TopicQue
 		return queue.size();
 	}
 
-	public boolean add(String topic, E element) {
+	public boolean add(T topic, E element) {
 		return add(new WithTopic<>(topic, element));
 	}
 
-	public boolean add(WithTopic<E> elementWithTopic) {
+	public boolean add(WithTopic<T, E> elementWithTopic) {
 		if (!allowDuplicates && queue.contains(elementWithTopic)) {
 			logger.trace("Not adding element with topic {} to queue '{}' as it is a duplicate.", elementWithTopic.toString(), getName());
 			return false;
@@ -103,25 +88,23 @@ public class SimpleTopicQueue<E> extends MultiThreadedModule implements TopicQue
 		}
 	}
 
-	public Map<TopicQueueListener<E>, Set<Pattern>> getListeners() {
+	public Map<TopicQueueListener<T, E>, Predicate<T>> getListeners() {
 		return listeners;
 	}
 
-	public void unSubscribe(TopicQueueListener<E> listener) {
+	public void unSubscribe(TopicQueueListener<T, E> listener) {
 		subscribe(listener, null);
 	}
 
-	public void subscribe(TopicQueueListener<E> listener, Set<String> filters) {
-		if (filters == null) {
+	public void subscribe(TopicQueueListener<T, E> listener) {
+		subscribe(listener, SimpleTopicQueue::catchAllFilter);
+	}
+
+	public void subscribe(TopicQueueListener<T, E> listener, Predicate<T> filter) {
+		if (filter == null) {
 			listeners.remove(listener);
 		} else {
-			Set<Pattern> patterns;
-			if (filters == catchAllFilter) {
-				patterns = catchAllPattern;
-			} else {
-				patterns = filters.stream().map(Pattern::compile).collect(Collectors.toCollection(LinkedHashSet::new));
-			}
-			listeners.put(listener, patterns);
+			listeners.put(listener, filter);
 		}
 		filtersCache.clear();
 	}
@@ -138,7 +121,7 @@ public class SimpleTopicQueue<E> extends MultiThreadedModule implements TopicQue
 				if (waitingForListeners()) {
 					continue;
 				}
-				WithTopic<E> elementWithTopic = queue.poll(1, TimeUnit.SECONDS);
+				WithTopic<T, E> elementWithTopic = queue.poll(1, TimeUnit.SECONDS);
 				if (elementWithTopic != null) {
 					if (!workWithElement(elementWithTopic) && keepElements) {
 						logger.warn("Failed to work with element in queue, putting it back. Element is: {}", elementWithTopic.toString());
@@ -160,29 +143,25 @@ public class SimpleTopicQueue<E> extends MultiThreadedModule implements TopicQue
 		}
 	}
 
-	protected boolean workWithElement(WithTopic<E> elementWithTopic) {
-		Set<TopicQueueListener<E>> affectedListeners = filtersCache.get(elementWithTopic.topic);
+	protected boolean workWithElement(WithTopic<T, E> elementWithTopic) {
+		Set<TopicQueueListener<T, E>> affectedListeners = null;
+		if (elementWithTopic.topic != null) {
+			// TODO: Maybe allow null topics in cache?
+			affectedListeners = filtersCache.get(elementWithTopic.topic);
+		}
 		if (affectedListeners == null) {
 			affectedListeners = new LinkedHashSet<>();
-			listenersLoop:
-			for (Map.Entry<TopicQueueListener<E>, Set<Pattern>> entry : listeners.entrySet()) {
-				if (entry.getValue() == catchAllPattern) {
+			for (Map.Entry<TopicQueueListener<T, E>, Predicate<T>> entry : listeners.entrySet()) {
+				if (entry.getValue().test(elementWithTopic.topic)) {
 					affectedListeners.add(entry.getKey());
-				} else {
-					Set<Pattern> patterns = entry.getValue();
-					for (Pattern pattern : patterns) {
-						Matcher matcher = pattern.matcher(elementWithTopic.topic);
-						if (matcher.matches()) {
-							affectedListeners.add(entry.getKey());
-							continue listenersLoop;
-						}
-					}
 				}
 			}
-			filtersCache.put(elementWithTopic.topic, affectedListeners);
+			if (elementWithTopic.topic != null) {
+				filtersCache.put(elementWithTopic.topic, affectedListeners);
+			}
 		}
 		boolean success = true;
-		for (TopicQueueListener<E> listener : affectedListeners) {
+		for (TopicQueueListener<T, E> listener : affectedListeners) {
 			try {
 				success &= listener.handleElement(elementWithTopic);
 			} catch (Throwable throwable) {

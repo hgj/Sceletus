@@ -2,15 +2,16 @@ package hu.hgj.sceletus.module;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
-import hu.hgj.sceletus.module.AbstractModuleAdapter;
-import hu.hgj.sceletus.module.ModuleManager;
 import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.TopicQueueListener;
 import hu.hgj.sceletus.queue.WithTopic;
+import hu.hgj.sceletus.queue.simple.PatternFilter;
 import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -23,32 +24,31 @@ import java.util.stream.Collectors;
  * The module executes {@link #handleElement(WithTopic)} for each received
  * element from the input queue.
  *
- * @param <I> The type of the consumed element.
+ * @param <IT> The type of the consumed topic.
+ * @param <IE> The type of the consumed element.
  */
-public abstract class ConsumerModule<I> extends AbstractModuleAdapter implements TopicQueueListener<I> {
+public abstract class ConsumerModule<IT, IE> extends AbstractModuleAdapter implements TopicQueueListener<IT, IE> {
 
-	protected TopicQueue<I> inputQueue = null;
-
-	public static final Set<String> DEFAULT_INPUT_QUEUE_FILTERS = SimpleTopicQueue.catchAllFilter;
+	protected TopicQueue<IT, IE> inputQueue = null;
 
 	public ConsumerModule(String name) {
 		super(name);
 	}
 
-	public ConsumerModule(String name, TopicQueue<I> inputQueue) {
+	public ConsumerModule(String name, TopicQueue<IT, IE> inputQueue) {
 		super(name);
 		this.inputQueue = inputQueue;
 		this.inputQueue.subscribe(this, getInputQueueFilters());
 	}
 
-	public ConsumerModule(String name, TopicQueue<I> inputQueue, Set<String> inputQueueFilters) {
+	public ConsumerModule(String name, TopicQueue<IT, IE> inputQueue, Predicate<IT> inputQueueFilters) {
 		super(name);
 		this.inputQueue = inputQueue;
 		this.inputQueue.subscribe(this, inputQueueFilters);
 	}
 
-	protected Set<String> getInputQueueFilters() {
-		return DEFAULT_INPUT_QUEUE_FILTERS;
+	protected Predicate<IT> getInputQueueFilters() {
+		return SimpleTopicQueue::catchAllFilter;
 	}
 
 	@Override
@@ -60,7 +60,9 @@ public abstract class ConsumerModule<I> extends AbstractModuleAdapter implements
 			inputQueue = ModuleManager.getConfiguredQueue(configuration, "$.input");
 			try {
 				List<String> filters = JsonPath.read(configuration, "$.inputFilters");
-				inputQueue.subscribe(this, filters.stream().distinct().collect(Collectors.toSet()));
+				Set<Pattern> patterns = filters.stream().distinct().map(Pattern::compile).collect(Collectors.toSet());
+				PatternFilter<IT> patternFilter = new PatternFilter<>(patterns);
+				inputQueue.subscribe(this, patternFilter);
 			} catch (PathNotFoundException ignored) {
 				inputQueue.subscribe(this, getInputQueueFilters());
 			}
@@ -71,7 +73,7 @@ public abstract class ConsumerModule<I> extends AbstractModuleAdapter implements
 	}
 
 	@Override
-	public boolean handleElement(WithTopic<I> elementWithTopic) {
+	public boolean handleElement(WithTopic<IT, IE> elementWithTopic) {
 		try {
 			return consumeElement(elementWithTopic);
 		} catch (Throwable throwable) {
@@ -87,6 +89,6 @@ public abstract class ConsumerModule<I> extends AbstractModuleAdapter implements
 	 *
 	 * @return See {@link TopicQueueListener#handleElement(WithTopic)}.
 	 */
-	protected abstract boolean consumeElement(WithTopic<I> inputElement);
+	protected abstract boolean consumeElement(WithTopic<IT, IE> inputElement);
 
 }

@@ -22,14 +22,14 @@ import java.util.List;
  *
  * @param <O> The type of the output element.
  */
-public abstract class ProducerModule<O> extends MultiThreadedModule {
+public abstract class ProducerModule<T, O> extends MultiThreadedModule {
 
 	public static final long DEFAULT_SLEEP_TIME = 60;
 
 	protected long sleepTimeSeconds = DEFAULT_SLEEP_TIME;
 	protected long sleepTimeNano = sleepTimeSeconds * 1_000_000_000;
 
-	protected TopicQueue<O> outputQueue;
+	protected TopicQueue<T, O> outputQueue;
 
 	public ProducerModule(String name) {
 		super(name);
@@ -64,7 +64,7 @@ public abstract class ProducerModule<O> extends MultiThreadedModule {
 		while (running) {
 			// Produce output if we did sleep enough
 			if (System.nanoTime() - lastRunEnded > sleepTimeNano) {
-				List<WithTopic<O>> outputs = null;
+				List<WithTopic<T, O>> outputs = null;
 				try {
 					outputs = produceOutput();
 				} catch (Throwable throwable) {
@@ -94,6 +94,6 @@ public abstract class ProducerModule<O> extends MultiThreadedModule {
 	 * @return The list of new, produced elements (can be empty) or null on
 	 * failure.
 	 */
-	protected abstract List<WithTopic<O>> produceOutput();
+	protected abstract List<WithTopic<T, O>> produceOutput();
 
 }

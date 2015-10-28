@@ -24,9 +24,9 @@ public class ModuleManagerTests {
 
 	@Test
 	public void registerTopicQueue() {
-		TopicQueue<Integer> integerTopicQueue = new SimpleTopicQueue<>("testIntegerTopicQueue", 1, false, false);
+		TopicQueue<Object, Integer> integerTopicQueue = new SimpleTopicQueue<>("testIntegerTopicQueue", 1, false, false);
 		assertTrue("ModuleManager should return true", ModuleManager.queueRegistry.register(integerTopicQueue));
-		TopicQueue<Integer> retrievedQueue = (TopicQueue<Integer>) ModuleManager.queueRegistry.get(integerTopicQueue.getName());
+		TopicQueue<Object, Integer> retrievedQueue = (TopicQueue<Object, Integer>) ModuleManager.queueRegistry.get(integerTopicQueue.getName());
 		assertEquals("Retrieved SimpleQueue should equal to registered SimpleQueue", integerTopicQueue, retrievedQueue);
 	}
 
