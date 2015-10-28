@@ -153,16 +153,43 @@ public class ModuleManager {
 		}
 	}
 
+	public static <M extends Module> M getModule(String moduleName) throws Exception {
+		try {
+			return (M) moduleRegistry.get(moduleName);
+		} catch (ClassCastException exception) {
+			String error = "Can not get module. Registered module is not the right type.";
+			logger.error(error, exception);
+			throw new Exception(error, exception);
+		}
+	}
+
+	public static <M extends Module> M getConfiguredModule(Object configuration, String path) throws Exception {
+		try {
+			String moduleName = JsonPath.read(configuration, path);
+			return getModule(moduleName);
+		} catch (PathNotFoundException exception) {
+			String error = "Can not get module. Missing configuration '" + path + "'.";
+			logger.error(error, exception);
+			throw new Exception(error, exception);
+		}
+	}
+
+	public static <T, E> TopicQueue<T, E> getQueue(String queueName) throws Exception {
+		try {
+			return (TopicQueue<T, E>) queueRegistry.get(queueName);
+		} catch (ClassCastException exception) {
+			String error = "Can not get queue. Registered queue is not the right type.";
+			logger.error(error, exception);
+			throw new Exception(error, exception);
+		}
+	}
+
 	public static <T, E> TopicQueue<T, E> getConfiguredQueue(Object configuration, String path) throws Exception {
 		try {
 			String queueName = JsonPath.read(configuration, path);
-			return (TopicQueue<T, E>) queueRegistry.get(queueName);
+			return getQueue(queueName);
 		} catch (PathNotFoundException exception) {
 			String error = "Can not get queue. Missing configuration '" + path + "'.";
-			logger.error(error, exception);
-			throw new Exception(error, exception);
-		} catch (ClassCastException exception) {
-			String error = "Can not get queue. Registered queue is not the right type.";
 			logger.error(error, exception);
 			throw new Exception(error, exception);
 		}
