@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
@@ -83,7 +84,7 @@ public class ModuleManager {
 
 	public static boolean createAbstractModules(List<Object> modulesConfiguration, ModuleRegistry<Module> registry) {
 		if (modulesConfiguration.size() == 0) {
-			return false;
+			return true;
 		}
 		for (Object moduleConfiguration : modulesConfiguration) {
 			String moduleName;
@@ -194,12 +195,31 @@ public class ModuleManager {
 		}
 	}
 
+	public static <Q extends TopicQueue<?, ?>> List<Q> getQueues(List<String> queueNames) {
+		List<Q> queues = new ArrayList<>();
+		for (String queueName : queueNames) {
+			queues.add(getQueue(queueName));
+		}
+		return queues;
+	}
+
 	public static <Q extends TopicQueue<?, ?>> Q getConfiguredQueue(Object configuration, String path) {
 		try {
 			String queueName = JsonPath.read(configuration, path);
 			return getQueue(queueName);
 		} catch (PathNotFoundException exception) {
 			String error = "Can not get queue. Missing configuration '" + path + "'.";
+			logger.error(error, exception);
+			throw new RuntimeException(error, exception);
+		}
+	}
+
+	public static <Q extends TopicQueue<?, ?>> List<Q> getConfiguredQueues(Object configuration, String path) {
+		try {
+			List<String> queueNames = JsonPath.read(configuration, path);
+			return getQueues(queueNames);
+		} catch (PathNotFoundException exception) {
+			String error = "Can not get queues. Missing configuration '" + path + "'.";
 			logger.error(error, exception);
 			throw new RuntimeException(error, exception);
 		}

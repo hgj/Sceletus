@@ -35,7 +35,7 @@ public class Main {
 			exception.printStackTrace();
 			System.exit(E_IO);
 		}
-		System.out.printf("Sceletus started up with %d modules and %d queues registered.",
+		System.out.printf("Sceletus started up with %d modules and %d queues registered.\n",
 				ModuleManager.moduleRegistry.getAll().size(),
 				ModuleManager.queueRegistry.getAll().size()
 		);

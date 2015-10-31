@@ -1,42 +1,37 @@
 package hu.hgj.sceletus.module.simple;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 public class Deduper<E> {
 
-	public static final long DEFAULT_DEDUPE_WINDOW_NANO = 0;
+	public static final Duration INFINITE_DEDUPE_WINDOW_DURATION = Duration.ZERO;
+	public static final Duration DEFAULT_DEDUPE_WINDOW_DURATION = INFINITE_DEDUPE_WINDOW_DURATION;
 
-	protected long dedupeWindowNano = DEFAULT_DEDUPE_WINDOW_NANO;
+	protected Duration dedupeWindowDuration = DEFAULT_DEDUPE_WINDOW_DURATION;
 
-	public long getDedupeWindow() {
-		return dedupeWindowNano;
-	}
-
-	public void setDedupeWindow(long dedupeWindowNano) {
-		this.dedupeWindowNano = dedupeWindowNano;
-	}
-
-	public void setDedupeWindow(long duration, TimeUnit timeUnit) {
-		this.dedupeWindowNano = timeUnit.toNanos(duration);
-	}
-
-	protected ConcurrentHashMap<E, Long> cache = new ConcurrentHashMap<>();
+	protected ConcurrentHashMap<E, Instant> cache = new ConcurrentHashMap<>();
 
 	public Deduper() {
 	}
 
-	public Deduper(long dedupeWindowNano) {
-		setDedupeWindow(dedupeWindowNano);
+	public Deduper(Duration duration) {
+		setDedupeWindow(duration);
 	}
 
-	public Deduper(long duration, TimeUnit timeUnit) {
-		setDedupeWindow(duration, timeUnit);
+	public Duration getDedupeWindow() {
+		return dedupeWindowDuration;
+	}
+
+	public void setDedupeWindow(Duration duration) {
+		this.dedupeWindowDuration = dedupeWindowDuration;
 	}
 
 	public boolean isDuplicate(E element) {
 		if (cache.containsKey(element)) {
-			if (dedupeWindowNano == 0 || (System.nanoTime() - cache.get(element)) < dedupeWindowNano) {
+			if (dedupeWindowDuration == INFINITE_DEDUPE_WINDOW_DURATION
+					|| Duration.between(Instant.now(), cache.get(element)).compareTo(dedupeWindowDuration) >= 0) {
 				return true;
 			}
 		}
@@ -45,13 +40,13 @@ public class Deduper<E> {
 
 	public boolean dedupe(E element) {
 		if (isDuplicate(element)) {
-			if (dedupeWindowNano != 0) {
+			if (dedupeWindowDuration != INFINITE_DEDUPE_WINDOW_DURATION) {
 				// NOTE: We do not update timestamps if the window is "infinite"
-				cache.put(element, System.nanoTime());
+				cache.put(element, Instant.now());
 			}
 			return true;
 		} else {
-			cache.put(element, System.nanoTime());
+			cache.put(element, Instant.now());
 			return false;
 		}
 	}

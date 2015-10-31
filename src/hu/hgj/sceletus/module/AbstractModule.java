@@ -3,6 +3,8 @@ package hu.hgj.sceletus.module;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+
 public abstract class AbstractModule implements Module {
 
 	protected Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -34,7 +36,7 @@ public abstract class AbstractModule implements Module {
 		if (state == State.STARTED) {
 			logger.warn("Module '{}' is STARTED. Stopping before resetting.", getName());
 			if (!stop()) {
-				// Not logging here about the stop() call.
+				// Not logging here about the stop() call, as stop() logs.
 				return false;
 			}
 		}
@@ -60,7 +62,7 @@ public abstract class AbstractModule implements Module {
 		if (state != State.RESET) {
 			logger.warn("Module '{}' is not RESET. Resetting before starting.", getName());
 			if (!reset()) {
-				// Not logging here about the reset() call.
+				// Not logging here about the reset() call, as reset() logs.
 				return false;
 			}
 		}
@@ -83,7 +85,7 @@ public abstract class AbstractModule implements Module {
 			logger.warn("Module '{}' is already STOPPED. Not doing anything.", getName());
 			return true;
 		}
-		// We do not care about any other state, just stop the module because it is requested.
+		// Just stop the module because it is requested.
 		if (doStop()) {
 			state = State.STOPPED;
 			logger.info("Module '{}' is STOPPED.", getName());
@@ -96,6 +98,28 @@ public abstract class AbstractModule implements Module {
 	}
 
 	protected abstract boolean doStop();
+
+	@Override
+	public boolean equals(Object other) {
+		if (this == other) return true;
+		if (other == null || getClass() != other.getClass()) return false;
+		AbstractModule otherAbstractModule = (AbstractModule) other;
+		return Objects.equals(name, otherAbstractModule.name) &&
+				Objects.equals(state, otherAbstractModule.state);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, state);
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName()
+				+ "{name='" + name
+				+ "', state='" + state
+				+ "'}";
+	}
 
 	@Override
 	protected void finalize() throws Throwable {

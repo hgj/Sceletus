@@ -41,15 +41,17 @@ public abstract class ProducerModule<T, O> extends MultiThreadedModule {
 			return false;
 		}
 		try {
-			outputQueue = ModuleManager.getConfiguredQueue(configuration, "$.output");
+			outputQueue = ModuleManager.getConfiguredQueue(configuration, "$.outputQueue");
 		} catch (Exception exception) {
 			logger.error("Failed to configure output queue.", exception);
+			return false;
 		}
 		try {
 			sleepTimeSeconds = ((Number) JsonPath.read(configuration, "$.sleepTime")).longValue();
 		} catch (PathNotFoundException ignored) {
 			// Use default
 		}
+		logger.info("Updated configuration: outputQueue={}, sleepTimeSeconds={}", outputQueue.getName(), sleepTimeSeconds);
 		return true;
 	}
 

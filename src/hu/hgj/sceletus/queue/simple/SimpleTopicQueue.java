@@ -60,6 +60,7 @@ public class SimpleTopicQueue<T, E> extends MultiThreadedModule implements Topic
 		} catch (PathNotFoundException ignored) {
 			// Ignore, stick to the default
 		}
+		logger.info("Updated configuration: workers={}, allowDuplicates={}, keepElements={}", workers, allowDuplicates, keepElements);
 		return true;
 	}
 

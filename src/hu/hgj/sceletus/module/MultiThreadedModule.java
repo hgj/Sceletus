@@ -50,6 +50,7 @@ public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 		} catch (PathNotFoundException ignored) {
 			// Ignore, stick to the default
 		}
+		logger.info("Updated configuration: threadJoinTimeoutMilli={}, threadRestartSleepMilli={}", threadJoinTimeoutMilli, threadRestartSleepMilli);
 		return true;
 	}
 

@@ -17,11 +17,8 @@ public class WithTopic<T, E> {
 		if (this == other) return true;
 		if (other == null || getClass() != other.getClass()) return false;
 		WithTopic<?, ?> otherWithTopic = (WithTopic<?, ?>) other;
-		if (otherWithTopic.topic == null ^ topic == null) return false;
-		if (otherWithTopic.element == null ^ element == null) return false;
-		if (topic != null && !topic.equals(otherWithTopic.topic)) return false;
-		if (element != null && !element.equals(otherWithTopic.element)) return false;
-		return true;
+		return Objects.equals(topic, otherWithTopic.topic) &&
+				Objects.equals(element, otherWithTopic.element);
 	}
 
 	@Override
@@ -31,7 +28,10 @@ public class WithTopic<T, E> {
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName() + "{topic='" + topic.toString() + "', element='" + element.toString() + "'}";
+		return this.getClass().getSimpleName()
+				+ "{topic='" + topic.toString()
+				+ "', element='" + element.toString()
+				+ "'}";
 	}
 
 }
