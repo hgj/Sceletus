@@ -25,7 +25,7 @@ public class Deduper<E> {
 	}
 
 	public void setDedupeWindow(Duration duration) {
-		this.dedupeWindowDuration = dedupeWindowDuration;
+		this.dedupeWindowDuration = duration;
 	}
 
 	public boolean isDuplicate(E element) {
