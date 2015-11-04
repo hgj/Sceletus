@@ -99,7 +99,7 @@ public abstract class ConverterModule<IT, IE, OT, OE> extends AbstractModuleAdap
 			}
 		}
 		try {
-			outputQueue = ModuleManager.getConfiguredQueue(configuration, "$.output");
+			outputQueue = ModuleManager.getConfiguredQueue(configuration, "$.outputQueue");
 		} catch (Exception exception) {
 			logger.error("Failed to configure output queue.", exception);
 			return false;
