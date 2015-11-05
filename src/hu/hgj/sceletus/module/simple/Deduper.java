@@ -29,9 +29,10 @@ public class Deduper<E> {
 	}
 
 	public boolean isDuplicate(E element) {
+		Instant now = Instant.now();
 		if (cache.containsKey(element)) {
-			if (dedupeWindowDuration == INFINITE_DEDUPE_WINDOW_DURATION
-					|| Duration.between(Instant.now(), cache.get(element)).compareTo(dedupeWindowDuration) >= 0) {
+			if (dedupeWindowDuration.equals(INFINITE_DEDUPE_WINDOW_DURATION)
+					|| Duration.between(now, cache.get(element)).abs().compareTo(dedupeWindowDuration) <= 0) {
 				return true;
 			}
 		}
@@ -39,14 +40,15 @@ public class Deduper<E> {
 	}
 
 	public boolean dedupe(E element) {
+		Instant now = Instant.now();
 		if (isDuplicate(element)) {
-			if (dedupeWindowDuration != INFINITE_DEDUPE_WINDOW_DURATION) {
+			if (!dedupeWindowDuration.equals(INFINITE_DEDUPE_WINDOW_DURATION)) {
 				// NOTE: We do not update timestamps if the window is "infinite"
-				cache.put(element, Instant.now());
+				cache.put(element, now);
 			}
 			return true;
 		} else {
-			cache.put(element, Instant.now());
+			cache.put(element, now);
 			return false;
 		}
 	}
