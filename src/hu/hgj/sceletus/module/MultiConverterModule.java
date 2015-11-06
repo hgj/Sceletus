@@ -113,8 +113,16 @@ public abstract class MultiConverterModule<IT, IE, OT, OE> extends AbstractModul
 					return false;
 				}
 				TopicQueue<IT, IE> inputQueue = ModuleManager.getQueue(inputQueueName);
-				inputQueues.add(inputQueue);
+				if (inputQueue == null) {
+					logger.error("Input queue '{}' does not exist. Skipping conversion.", inputQueueName);
+					continue;
+				}
 				TopicQueue<OT, OE> outputQueue = ModuleManager.getQueue(outputQueueName);
+				if (outputQueue == null) {
+					logger.error("Output queue '{}' does not exist. Skipping conversion.", outputQueueName);
+					continue;
+				}
+				inputQueues.add(inputQueue);
 				outputQueues.add(outputQueue);
 				String inputFilter = (String) conversion.get("inputFilter");
 				List<String> inputFilters = (List<String>) conversion.get("inputFilters");
@@ -130,6 +138,7 @@ public abstract class MultiConverterModule<IT, IE, OT, OE> extends AbstractModul
 					filter = (Predicate<IT>) PatternMapFilter.fromRegexMap(inputFilterMap);
 				}
 				if (filter == null) {
+					logger.warn("No filter found for input '{}', using default filter (accept all).", inputQueueName);
 					filter = SimpleTopicQueue::catchAllFilter;
 				}
 				inputQueue.subscribe(
@@ -139,6 +148,9 @@ public abstract class MultiConverterModule<IT, IE, OT, OE> extends AbstractModul
 			}
 		} catch (PathNotFoundException | ClassCastException exception) {
 			logger.error("Failed to configure input-output.", exception);
+		}
+		if (inputQueues.isEmpty()) {
+			logger.error("Failed to configure any conversion.");
 		}
 		logger.info("Updated configuration: inputQueues={}, outputQueues={}", inputQueues.toString(), outputQueues.toString());
 		return true;

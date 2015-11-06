@@ -65,6 +65,10 @@ public abstract class ConsumerModule<IT, IE> extends AbstractModuleAdapter imple
 			logger.error("Failed to configure input queue.", exception);
 			return false;
 		}
+		if (inputQueue == null) {
+			logger.error("Input queue does not exist.");
+			return false;
+		}
 		try {
 			Map<String, String> filterMap = JsonPath.read(configuration, "$.inputFilterMap");
 			PatternMapFilter<Map<String, Object>> patternMapFilter = PatternMapFilter.fromRegexMap(filterMap);
@@ -85,7 +89,7 @@ public abstract class ConsumerModule<IT, IE> extends AbstractModuleAdapter imple
 					PatternFilter<IT> patternFilter = PatternFilter.fromRegexSet(Collections.singleton(filter));
 					inputQueue.subscribe(this, patternFilter);
 				} catch (PathNotFoundException filterException) {
-					logger.info("No filter set for input, using default.");
+					logger.warn("No filter found for input '{}', using default filter (accept all).", inputQueue.getName());
 					inputQueue.subscribe(this, getInputQueueFilters());
 				}
 			}

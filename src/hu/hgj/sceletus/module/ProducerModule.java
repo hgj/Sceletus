@@ -26,6 +26,7 @@ public abstract class ProducerModule<T, O> extends MultiThreadedModule {
 
 	public static final long DEFAULT_SLEEP_TIME = 60;
 
+	// TODO: Update to Duration
 	protected long sleepTimeSeconds = DEFAULT_SLEEP_TIME;
 	protected long sleepTimeNano = sleepTimeSeconds * 1_000_000_000;
 
@@ -44,6 +45,10 @@ public abstract class ProducerModule<T, O> extends MultiThreadedModule {
 			outputQueue = ModuleManager.getConfiguredQueue(configuration, "$.outputQueue");
 		} catch (Exception exception) {
 			logger.error("Failed to configure output queue.", exception);
+			return false;
+		}
+		if (outputQueue == null) {
+			logger.error("Output queue does not exist.");
 			return false;
 		}
 		try {

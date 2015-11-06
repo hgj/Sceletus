@@ -73,6 +73,10 @@ public abstract class ConverterModule<IT, IE, OT, OE> extends AbstractModuleAdap
 			logger.error("Failed to configure input queue.", exception);
 			return false;
 		}
+		if (inputQueue == null) {
+			logger.error("Input queue does not exist.");
+			return false;
+		}
 		try {
 			Map<String, String> filterMap = JsonPath.read(configuration, "$.inputFilterMap");
 			PatternMapFilter<Map<String, Object>> patternMapFilter = PatternMapFilter.fromRegexMap(filterMap);
@@ -93,7 +97,7 @@ public abstract class ConverterModule<IT, IE, OT, OE> extends AbstractModuleAdap
 					PatternFilter<IT> patternFilter = PatternFilter.fromRegexSet(Collections.singleton(filter));
 					inputQueue.subscribe(this, patternFilter);
 				} catch (PathNotFoundException filterException) {
-					logger.info("No filter set for input, using default.");
+					logger.warn("No filter found for input '{}', using default filter (accept all).", inputQueue.getName());
 					inputQueue.subscribe(this, getInputQueueFilters());
 				}
 			}
@@ -102,6 +106,10 @@ public abstract class ConverterModule<IT, IE, OT, OE> extends AbstractModuleAdap
 			outputQueue = ModuleManager.getConfiguredQueue(configuration, "$.outputQueue");
 		} catch (Exception exception) {
 			logger.error("Failed to configure output queue.", exception);
+			return false;
+		}
+		if (outputQueue == null) {
+			logger.error("Output queue does not exist.");
 			return false;
 		}
 		logger.info("Updated configuration: inputQueue={}, outputQueue={}", inputQueue.getName(), outputQueue.getName());
