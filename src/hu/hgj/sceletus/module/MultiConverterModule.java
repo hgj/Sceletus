@@ -11,15 +11,14 @@ import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
 public abstract class MultiConverterModule<IT, IE, OT, OE> extends AbstractModuleAdapter {
 
-	protected List<TopicQueue<IT, IE>> inputQueues = new LinkedList<>();
-	protected List<TopicQueue<OT, OE>> outputQueues = new LinkedList<>();
+	protected List<TopicQueue<IT, IE>> inputQueues = new ArrayList<>();
+	protected List<TopicQueue<OT, OE>> outputQueues = new ArrayList<>();
 
 	public MultiConverterModule(String name) {
 		super(name);
@@ -49,23 +48,23 @@ public abstract class MultiConverterModule<IT, IE, OT, OE> extends AbstractModul
 
 	public MultiConverterModule(String name, List<TopicQueue<IT, IE>> inputQueues, List<TopicQueue<OT, OE>> outputQueues) {
 		super(name);
-		this.inputQueues = inputQueues;
+		this.inputQueues.addAll(inputQueues);
 		subscribeToInputQueues();
-		this.outputQueues = outputQueues;
+		this.outputQueues.addAll(outputQueues);
 	}
 
 	public MultiConverterModule(String name, List<TopicQueue<IT, IE>> inputQueues, Predicate<IT> inputQueueFilter, List<TopicQueue<OT, OE>> outputQueues) {
 		super(name);
-		this.inputQueues = inputQueues;
+		this.inputQueues.addAll(inputQueues);
 		subscribeToInputQueues(inputQueueFilter);
-		this.outputQueues = outputQueues;
+		this.outputQueues.addAll(outputQueues);
 	}
 
 	public MultiConverterModule(String name, List<TopicQueue<IT, IE>> inputQueues, List<Predicate<IT>> inputQueueFilters, List<TopicQueue<OT, OE>> outputQueues) {
 		super(name);
-		this.inputQueues = inputQueues;
+		this.inputQueues.addAll(inputQueues);
 		subscribeToInputQueues(inputQueueFilters);
-		this.outputQueues = outputQueues;
+		this.outputQueues.addAll(outputQueues);
 	}
 
 	protected Predicate<IT> getDefaultInputQueueFilter() {
@@ -149,9 +148,11 @@ public abstract class MultiConverterModule<IT, IE, OT, OE> extends AbstractModul
 			}
 		} catch (PathNotFoundException | ClassCastException exception) {
 			logger.error("Failed to configure input-output.", exception);
+			// We might have some conversions configured, not returning false
 		}
 		if (inputQueues.isEmpty()) {
 			logger.error("Failed to configure any conversion.");
+			return false;
 		}
 		logger.info("Updated configuration: inputQueues={}, outputQueues={}", inputQueues.toString(), outputQueues.toString());
 		return true;
