@@ -11,14 +11,15 @@ import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
 public abstract class MultiConverterModule<IT, IE, OT, OE> extends AbstractModuleAdapter {
 
-	protected List<TopicQueue<IT, IE>> inputQueues = null;
-	protected List<TopicQueue<OT, OE>> outputQueues = null;
+	protected List<TopicQueue<IT, IE>> inputQueues = new LinkedList<>();
+	protected List<TopicQueue<OT, OE>> outputQueues = new LinkedList<>();
 
 	public MultiConverterModule(String name) {
 		super(name);

@@ -42,8 +42,12 @@ public abstract class CommandInterpreterModule<T> extends MultiConverterModule<T
 	 *
 	 * @return The converted command name.
 	 */
-	public static String filterCommandName(String commandName) {
+	public static String defaultFilterCommandName(String commandName) {
 		return commandName.toLowerCase().replaceAll("[-_]", "");
+	}
+
+	protected String filterCommandName(String commandName) {
+		return defaultFilterCommandName(commandName);
 	}
 
 	protected List<String> getSupportedCommands() {
