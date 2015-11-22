@@ -8,9 +8,11 @@ import hu.hgj.sceletus.queue.WithTopic;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.function.Predicate;
 
 public class SimpleWriterModule extends ConsumerModule<Object, Object> {
@@ -69,7 +71,10 @@ public class SimpleWriterModule extends ConsumerModule<Object, Object> {
 		}
 		try {
 			outputFileWriter = new BufferedWriter(
-					new FileWriter(outputFile, append)
+					new OutputStreamWriter(
+							new FileOutputStream(outputFile, append),
+							Charset.defaultCharset()
+					)
 			);
 		} catch (IOException exception) {
 			logger.error("Exception while opening file for writing.", exception);
