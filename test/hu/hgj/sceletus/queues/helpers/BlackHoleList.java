@@ -1,4 +1,4 @@
-package hu.hgj.sceletus.test.queues.helpers;
+package hu.hgj.sceletus.queues.helpers;
 
 import java.util.Collection;
 import java.util.Iterator;

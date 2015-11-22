@@ -1,10 +1,11 @@
-package hu.hgj.sceletus.test.modules.simple;
+package hu.hgj.sceletus.modules.simple;
 
 import hu.hgj.sceletus.module.simple.Deduper;
 import org.junit.Test;
 
 import java.time.Duration;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -13,6 +14,7 @@ public class DeduperTests {
 	@Test
 	public void testInfiniteDeduping() {
 		Deduper<String> stringDeduper = new Deduper<>();
+		assertEquals("Expecting dedupe window to be infinite.", Deduper.INFINITE_DEDUPE_WINDOW_DURATION, stringDeduper.getDedupeWindow());
 		String string = "foobar";
 		assertFalse("Expecting first occurrence not to be a duplicate.", stringDeduper.isDuplicate(string));
 		assertFalse("Expecting first occurrence not to be a duplicate.", stringDeduper.dedupe(string));
@@ -28,6 +30,7 @@ public class DeduperTests {
 	@Test
 	public void testOneSecondDeduping() {
 		Deduper<String> stringDeduper = new Deduper<>(Duration.ofSeconds(1));
+		assertEquals("Expecting dedupe window to be one second.", Duration.ofSeconds(1), stringDeduper.getDedupeWindow());
 		String string = "foobar";
 		assertFalse("Expecting first occurrence not to be a duplicate.", stringDeduper.isDuplicate(string));
 		assertFalse("Expecting first occurrence not to be a duplicate.", stringDeduper.dedupe(string));

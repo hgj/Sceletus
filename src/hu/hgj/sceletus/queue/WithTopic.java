@@ -29,9 +29,11 @@ public class WithTopic<T, E> {
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName()
-				+ "{topic='" + topic.toString()
-				+ "', element='" + element.toString()
-				+ "'}";
+				+ "{topic="
+				+ (topic == null ? "null" : "'" + topic.toString() + "'")
+				+ ", element="
+				+ (element == null ? "null" : "'" + element.toString() + "'")
+				+ "}";
 	}
 
 }

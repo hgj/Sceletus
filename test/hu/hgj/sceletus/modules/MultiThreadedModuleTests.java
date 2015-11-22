@@ -1,10 +1,10 @@
-package hu.hgj.sceletus.test.modules;
+package hu.hgj.sceletus.modules;
 
 import hu.hgj.sceletus.module.Module;
 import hu.hgj.sceletus.module.MultiThreadedModule;
-import hu.hgj.sceletus.test.modules.helpers.ModuleHelper;
-import hu.hgj.sceletus.test.modules.implementations.LongRunningMultiThreadedModule;
-import hu.hgj.sceletus.test.modules.implementations.SimpleMultiThreadedModule;
+import hu.hgj.sceletus.modules.helpers.ModuleHelper;
+import hu.hgj.sceletus.modules.implementations.LongRunningMultiThreadedModule;
+import hu.hgj.sceletus.modules.implementations.SimpleMultiThreadedModule;
 import org.junit.Test;
 
 import java.io.IOException;

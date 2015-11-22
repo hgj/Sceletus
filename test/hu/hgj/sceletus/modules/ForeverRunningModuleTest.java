@@ -1,30 +1,29 @@
-package hu.hgj.sceletus.test.modules.helpers;
+package hu.hgj.sceletus.modules;
 
 import hu.hgj.sceletus.module.Module;
+import hu.hgj.sceletus.modules.implementations.ForeverRunningSingleThreadedModule;
+import org.junit.Test;
 
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import static org.junit.Assert.assertEquals;
 
-public class ModuleHelper {
+public class ForeverRunningModuleTest {
 
-	public static void lifeCycleModule(Module module) {
+	@Test
+	public void foreverRunningModuleTest() {
+		Set<Integer> outputSet = new CopyOnWriteArraySet<>();
+		Module module = new ForeverRunningSingleThreadedModule("testModule", outputSet);
 		assertEquals("Module state should be UNKNOWN", Module.State.UNKNOWN, module.getState());
 		assertEquals("Module should successfully reset()", true, module.reset());
 		assertEquals("Module state should be RESET", Module.State.RESET, module.getState());
 		assertEquals("Module should successfully start()", true, module.start());
 		assertEquals("Module state should be STARTED", Module.State.STARTED, module.getState());
-		assertEquals("Module should successfully stop()", true, module.stop());
-		assertEquals("Module state should be STOPPED", Module.State.STOPPED, module.getState());
+		assertEquals("Module should not stop() successfully", false, module.stop());
+		assertEquals("Module state should be UNKNOWN", Module.State.UNKNOWN, module.getState());
 		assertEquals("Module should successfully reset()", true, module.reset());
 		assertEquals("Module state should be RESET", Module.State.RESET, module.getState());
-	}
-
-	public static void testNThreadedModule(Module module, Set<Integer> outputSet, int threads) {
-		ModuleHelper.lifeCycleModule(module);
-		for (int i = 0; i < threads; i++) {
-			assertEquals(String.format("outputSet should contain Integer(%d)", i), true, outputSet.contains(Integer.valueOf(i)));
-		}
 	}
 
 }

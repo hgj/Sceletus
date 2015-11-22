@@ -1,4 +1,4 @@
-package hu.hgj.sceletus.test.queues.helpers;
+package hu.hgj.sceletus.queues.helpers;
 
 import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
 import hu.hgj.sceletus.queue.WithTopic;

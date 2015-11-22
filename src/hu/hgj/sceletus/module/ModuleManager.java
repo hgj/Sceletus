@@ -12,6 +12,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
@@ -88,13 +89,25 @@ public class ModuleManager {
 		}
 		for (Object moduleConfiguration : modulesConfiguration) {
 			String moduleName;
+			List<String> moduleNames = null;
 			String moduleClass;
 			try {
-				moduleName = JsonPath.read(moduleConfiguration, "$.name");
 				moduleClass = JsonPath.read(moduleConfiguration, "$.class");
 			} catch (PathNotFoundException exception) {
-				logger.error("Can not load module without 'name' or 'class'.");
+				logger.error("Can not load module without 'class'.", exception);
 				return false;
+			}
+			try {
+				moduleName = JsonPath.read(moduleConfiguration, "$.name");
+				moduleNames = Collections.singletonList(moduleName);
+			} catch (PathNotFoundException exception) {
+				try {
+					moduleNames = JsonPath.read(moduleConfiguration, "$.names");
+				} catch (PathNotFoundException exception2) {
+					logger.error("Can not load module without 'name'", exception);
+					logger.error("Can not load modules without 'names'", exception2);
+					return false;
+				}
 			}
 			boolean moduleEnabled = true;
 			try {
@@ -108,32 +121,35 @@ public class ModuleManager {
 				// Ignore and leave module enabled
 			}
 			if (!moduleEnabled) {
-				logger.info("Not loading module '{}' as configuration says it should be disabled.", moduleName);
+				logger.info("Not loading module(s) '{}' as configuration says it should be disabled.", moduleNames.toString());
 				continue;
 			}
-			Module module = createAbstractModule(moduleName, moduleClass);
-			if (module != null) {
-				try {
-					Object customModuleConfiguration = JsonPath.read(moduleConfiguration, "$.configuration");
+			for (String name : moduleNames) {
+				moduleName = name;
+				Module module = createAbstractModule(moduleName, moduleClass);
+				if (module != null) {
 					try {
-						if (!module.updateConfiguration(customModuleConfiguration)) {
-							logger.error("Failed to configure module '{}' ({}).", moduleName, moduleClass);
+						Object customModuleConfiguration = JsonPath.read(moduleConfiguration, "$.configuration");
+						try {
+							if (!module.updateConfiguration(customModuleConfiguration)) {
+								logger.error("Failed to configure module '{}' ({}).", moduleName, moduleClass);
+								return false;
+							}
+						} catch (Exception exception) {
+							logger.error("Failed to configure module (exception caught) '{}' ({}).", moduleName, moduleClass, exception);
 							return false;
 						}
-					} catch (Exception exception) {
-						logger.error("Failed to configure module (exception caught) '{}' ({}).", moduleName, moduleClass, exception);
+					} catch (PathNotFoundException exception) {
+						logger.info("No custom configuration found for module '{}' ({}). Not configuring.", moduleName, moduleClass);
+					}
+					if (!registry.register(module)) {
+						logger.error("Failed to register module '{}' ({}).", moduleName, moduleClass);
 						return false;
 					}
-				} catch (PathNotFoundException exception) {
-					logger.info("No custom configuration found for module '{}' ({}). Not configuring.", moduleName, moduleClass);
-				}
-				if (!registry.register(module)) {
-					logger.error("Failed to register module '{}' ({}).", moduleName, moduleClass);
+				} else {
+					logger.error("Failed to create module '{}' ({}).", moduleName, moduleClass);
 					return false;
 				}
-			} else {
-				logger.error("Failed to create module '{}' ({}).", moduleName, moduleClass);
-				return false;
 			}
 		}
 		return true;

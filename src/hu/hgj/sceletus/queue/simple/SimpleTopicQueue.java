@@ -25,7 +25,7 @@ public class SimpleTopicQueue<T, E> extends MultiThreadedModule implements Topic
 	protected final BlockingQueue<WithTopic<T, E>> queue = new LinkedBlockingQueue<>();
 	protected int workers = 1;
 	protected boolean allowDuplicates = false;
-	protected boolean keepElements = true;
+	protected boolean keepElements = false;
 	protected final Map<TopicQueueListener<T, E>, Predicate<T>> listeners = new ConcurrentHashMap<>();
 	protected final Map<T, Set<TopicQueueListener<T, E>>> filtersCache = new ConcurrentHashMap<>();
 
@@ -82,6 +82,7 @@ public class SimpleTopicQueue<T, E> extends MultiThreadedModule implements Topic
 			return false;
 		}
 		if (queue.offer(elementWithTopic)) {
+			logger.trace("Added element with topic {} to queue '{}'.", elementWithTopic.toString(), getName());
 			return true;
 		} else {
 			logger.warn("Failed to add element with topic {} to queue '{}'.", elementWithTopic.toString(), getName());
@@ -102,10 +103,14 @@ public class SimpleTopicQueue<T, E> extends MultiThreadedModule implements Topic
 	}
 
 	public void subscribe(TopicQueueListener<T, E> listener, Predicate<T> filter) {
-		if (filter == null) {
-			listeners.remove(listener);
-		} else {
-			listeners.put(listener, filter);
+		try {
+			if (filter == null) {
+				listeners.remove(listener);
+			} else {
+				listeners.put(listener, filter);
+			}
+		} catch (Throwable throwable) {
+			logger.error("Exception caught while {}subscribing.", filter == null ? "un" : "", throwable);
 		}
 		filtersCache.clear();
 	}
@@ -166,7 +171,7 @@ public class SimpleTopicQueue<T, E> extends MultiThreadedModule implements Topic
 			try {
 				success &= listener.handleElement(elementWithTopic);
 			} catch (Throwable throwable) {
-				logger.warn("Exception caught while handling element.", throwable);
+				logger.warn("Exception caught while handling element '{}'.", elementWithTopic.toString(), throwable);
 				success &= false;
 			}
 		}

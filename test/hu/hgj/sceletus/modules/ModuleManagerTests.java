@@ -1,10 +1,10 @@
-package hu.hgj.sceletus.test.modules;
+package hu.hgj.sceletus.modules;
 
 import hu.hgj.sceletus.module.Module;
 import hu.hgj.sceletus.module.ModuleManager;
 import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
 import hu.hgj.sceletus.queue.TopicQueue;
-import hu.hgj.sceletus.test.modules.implementations.SimpleSingleThreadedModule;
+import hu.hgj.sceletus.modules.implementations.SimpleSingleThreadedModule;
 import org.junit.Test;
 
 import java.util.HashSet;

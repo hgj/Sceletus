@@ -1,9 +1,9 @@
-package hu.hgj.sceletus.test.modules;
+package hu.hgj.sceletus.modules;
 
 import hu.hgj.sceletus.module.Module;
-import hu.hgj.sceletus.test.modules.helpers.ModuleHelper;
-import hu.hgj.sceletus.test.modules.implementations.LongRunningSingleThreadedModule;
-import hu.hgj.sceletus.test.modules.implementations.SimpleSingleThreadedModule;
+import hu.hgj.sceletus.modules.helpers.ModuleHelper;
+import hu.hgj.sceletus.modules.implementations.LongRunningSingleThreadedModule;
+import hu.hgj.sceletus.modules.implementations.SimpleSingleThreadedModule;
 import org.junit.Test;
 
 import java.util.Set;

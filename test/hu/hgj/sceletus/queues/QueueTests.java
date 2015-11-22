@@ -1,10 +1,10 @@
-package hu.hgj.sceletus.test.queues;
+package hu.hgj.sceletus.queues;
 
 import hu.hgj.sceletus.module.ModuleManager;
 import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.WithTopic;
 import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
-import hu.hgj.sceletus.test.queues.helpers.Gatherer;
+import hu.hgj.sceletus.queues.helpers.Gatherer;
 import org.junit.Test;
 
 import java.util.ArrayList;

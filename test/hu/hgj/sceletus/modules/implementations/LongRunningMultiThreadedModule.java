@@ -1,4 +1,4 @@
-package hu.hgj.sceletus.test.modules.implementations;
+package hu.hgj.sceletus.modules.implementations;
 
 import org.slf4j.LoggerFactory;
 

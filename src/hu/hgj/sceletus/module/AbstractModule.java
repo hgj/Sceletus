@@ -5,6 +5,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
+/**
+ * This implementation of the {@link Module} interface allows the following
+ * transitions of the module's state:
+ * <li>{@link State#UNKNOWN} -> {@link State#RESET}
+ * <li>{@link State#RESET} -> {@link State#STARTED}
+ * <li>{@link State#STARTED} -> {@link State#STOPPED}
+ * <li>{@link State#STOPPED} -> {@link State#RESET}
+ * <li>any state -> {@link State#UNKNOWN}
+ */
 public abstract class AbstractModule implements Module {
 
 	protected Logger logger = LoggerFactory.getLogger(this.getClass());

@@ -1,4 +1,4 @@
-package hu.hgj.sceletus.test.queues;
+package hu.hgj.sceletus.queues;
 
 import hu.hgj.sceletus.queue.WithStringMapTopic;
 import hu.hgj.sceletus.queue.WithStringTopic;

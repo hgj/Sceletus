@@ -1,4 +1,4 @@
-package hu.hgj.sceletus.test.modules;
+package hu.hgj.sceletus.modules;
 
 import hu.hgj.sceletus.module.AbstractModuleAdapter;
 import hu.hgj.sceletus.module.Module;
