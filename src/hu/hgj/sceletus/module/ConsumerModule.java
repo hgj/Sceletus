@@ -18,10 +18,10 @@ import java.util.function.Predicate;
 /**
  * Base class for creating consumer like modules.
  * <p>
- * The module has an input queue configured with the {@code inputQueue}.
- * Filters for the input queue can be configured with {@code inputFilter} for
- * a single regex or {@code inputFilters} for a list of regexes. If the topics
- * are maps, you can also use the {@code inputFilterMap} to configure a
+ * The module has an input queue configured with the {@code inputQueue}. Filters
+ * for the input queue can be configured with {@code inputFilter} for a single
+ * regex or {@code inputFilters} for a list of regexes. If the topics are maps,
+ * you can also use the {@code inputFilterMap} to configure a
  * {@link PatternMapFilter}.
  * <p>
  * The module executes {@link #handleElement(WithTopic)} for each received
@@ -112,6 +112,7 @@ public abstract class ConsumerModule<IT, IE> extends AbstractModuleAdapter imple
 	 * Override to work with (consume) the incoming elements.
 	 *
 	 * @param inputElement The received element.
+	 *
 	 * @return See {@link TopicQueueListener#handleElement(WithTopic)}.
 	 */
 	protected abstract boolean consumeElement(WithTopic<IT, IE> inputElement);

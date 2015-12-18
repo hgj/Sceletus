@@ -4,8 +4,8 @@ package hu.hgj.sceletus.module;
  * Module interface to gather all modules.
  * <p>
  * All modules should have a current state (see {@link State}), should be able
- * to transition to another using the {@link #reset()}, {@link #start()}
- * and {@link #stop()} methods.
+ * to transition to another using the {@link #reset()}, {@link #start()} and
+ * {@link #stop()} methods.
  */
 public interface Module {
 

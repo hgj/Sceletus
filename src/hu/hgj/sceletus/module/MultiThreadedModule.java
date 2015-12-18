@@ -3,54 +3,87 @@ package hu.hgj.sceletus.module;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 
+import java.time.Duration;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 
-	public static final long DEFAULT_THREAD_JOIN_TIMEOUT = 5000;
-	public static final long DEFAULT_THREAD_RESTART_SLEEP = 5000;
+	public static final Duration DEFAULT_THREAD_JOIN_TIMEOUT = Duration.ofSeconds(5);
+	public static final Duration DEFAULT_THREAD_RESTART_SLEEP_DURATION = Duration.ofSeconds(5);
 
-	protected long threadJoinTimeoutMilli = DEFAULT_THREAD_JOIN_TIMEOUT;
-	protected long threadRestartSleepMilli = DEFAULT_THREAD_RESTART_SLEEP;
+	protected Duration threadJoinTimeout = DEFAULT_THREAD_JOIN_TIMEOUT;
+	protected Duration threadRestartSleepDuration = DEFAULT_THREAD_RESTART_SLEEP_DURATION;
 
-	public long getThreadJoinTimeoutMilli() {
-		return threadJoinTimeoutMilli;
+	protected int numberOfThreads = 0;
+
+	public Duration getThreadJoinTimeout() {
+		return threadJoinTimeout;
 	}
 
-	public long getThreadRestartSleepMilli() {
-		return threadRestartSleepMilli;
+	public Duration getThreadRestartSleepDuration() {
+		return threadRestartSleepDuration;
 	}
 
 	protected ArrayList<Thread> threads;
 
 	protected boolean running = false;
 
-	protected abstract int getNumberOfThreads();
+	protected int getNumberOfThreads() {
+		return numberOfThreads > 0 ? numberOfThreads : 1;
+	}
 
 	public MultiThreadedModule(String name) {
 		super(name);
 	}
 
-	public MultiThreadedModule(String name, long threadJoinTimeoutMilli, long threadRestartSleepMilli) {
+	public MultiThreadedModule(String name, Duration threadJoinTimeout, Duration threadRestartSleepDuration) {
 		super(name);
-		this.threadJoinTimeoutMilli = threadJoinTimeoutMilli;
-		this.threadRestartSleepMilli = threadRestartSleepMilli;
+		this.threadJoinTimeout = threadJoinTimeout;
+		this.threadRestartSleepDuration = threadRestartSleepDuration;
 	}
 
 	@Override
 	public boolean updateConfiguration(Object configuration) {
 		try {
-			threadJoinTimeoutMilli = ((Number) JsonPath.read(configuration, "$.sceletus.threadJoinTimeout")).longValue();
+			numberOfThreads = JsonPath.read(configuration, "$.sceletus.numberOfThreads");
 		} catch (PathNotFoundException ignored) {
 			// Ignore, stick to the default
 		}
 		try {
-			threadRestartSleepMilli = ((Number) JsonPath.read(configuration, "$.sceletus.threadRestartSleep")).longValue();
+			String threadJoinTimeoutString = JsonPath.read(configuration, "$.sceletus.threadJoinTimeout");
+			try {
+				threadJoinTimeout = Duration.parse(threadJoinTimeoutString);
+			} catch (DateTimeParseException exception) {
+				logger.error("Failed to parse '{}' as an ISO-8601 duration.", threadJoinTimeoutString, exception);
+				return false;
+			} catch (ArithmeticException exception) {
+				logger.error("Configured duration is too big to fit in a long.", exception);
+				return false;
+			}
 		} catch (PathNotFoundException ignored) {
 			// Ignore, stick to the default
 		}
-		logger.info("Updated configuration: threadJoinTimeoutMilli={}, threadRestartSleepMilli={}", threadJoinTimeoutMilli, threadRestartSleepMilli);
+		try {
+			String threadRestartSleepDurationString = JsonPath.read(configuration, "$.sceletus.threadRestartSleepDuration");
+			try {
+				threadRestartSleepDuration = Duration.parse(threadRestartSleepDurationString);
+			} catch (DateTimeParseException exception) {
+				logger.error("Failed to parse '{}' as an ISO-8601 duration.", threadRestartSleepDurationString, exception);
+				return false;
+			} catch (ArithmeticException exception) {
+				logger.error("Configured duration is too big to fit in a long.", exception);
+				return false;
+			}
+		} catch (PathNotFoundException ignored) {
+			// Ignore, stick to the default
+		}
+		logger.info("Updated configuration: numberOfThreads={}, threadJoinTimeout={}, threadRestartSleepDuration={}",
+				getNumberOfThreads(),
+				getThreadJoinTimeout().toString(),
+				getThreadRestartSleepDuration().toString()
+		);
 		return true;
 	}
 
@@ -86,7 +119,7 @@ public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 					// Sleep before restarting thread
 					if (running) {
 						try {
-							Thread.sleep(threadRestartSleepMilli);
+							Thread.sleep(threadRestartSleepDuration.toMillis());
 						} catch (InterruptedException ignored) {
 							// Ignore
 						}
@@ -118,7 +151,7 @@ public abstract class MultiThreadedModule extends AbstractModuleAdapter {
 			threads.stream().filter(Thread::isAlive).forEach(thread -> {
 				thread.interrupt();
 				try {
-					thread.join(threadJoinTimeoutMilli);
+					thread.join(threadJoinTimeout.toMillis());
 				} catch (InterruptedException exception) {
 					logger.warn("Interrupted while waiting for thread '{}' to stop.", thread.getName(), exception);
 				}

@@ -152,7 +152,7 @@ public class SimpleTopicQueue<T, E> extends MultiThreadedModule implements Topic
 	protected boolean workWithElement(WithTopic<T, E> elementWithTopic) {
 		Set<TopicQueueListener<T, E>> affectedListeners = null;
 		if (elementWithTopic.topic != null) {
-			// TODO: Maybe allow null topics in cache?
+			// TODO: #3 Cache for null topics in SimpleTopicQueue
 			affectedListeners = filtersCache.get(elementWithTopic.topic);
 		}
 		if (affectedListeners == null) {

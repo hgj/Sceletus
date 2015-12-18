@@ -19,12 +19,13 @@ import java.util.List;
  * the deduplication window's duration in ISO-8601 format.
  * See {@link Deduper#DEFAULT_DEDUPE_WINDOW_DURATION} for default value.
  * <p>
- * The module drops (does not output) any element, that has been seen within
- * the {@code dedupeWindow} long deduplication window. A window size of zero
- * means "infinite".
+ * The module drops (does not output) any element, that has been seen within the
+ * {@code dedupeWindow} long deduplication window. A window size of zero means
+ * "infinite".
  *
  * @param <T> The type of input (and thus, the output) topic.
  * @param <E> The type of input (and thus, the output) element.
+ *
  * @see ConverterModule
  */
 public class DeduperModule<T, E> extends ConverterModule<T, E, T, E> {

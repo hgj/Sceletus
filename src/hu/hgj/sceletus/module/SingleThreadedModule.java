@@ -1,12 +1,14 @@
 package hu.hgj.sceletus.module;
 
+import java.time.Duration;
+
 public abstract class SingleThreadedModule extends MultiThreadedModule {
 
 	public SingleThreadedModule(String name) {
 		super(name);
 	}
 
-	public SingleThreadedModule(String name, long threadJoinTimeoutMilli, long threadRestartSleepMilli) {
+	public SingleThreadedModule(String name, Duration threadJoinTimeoutMilli, Duration threadRestartSleepMilli) {
 		super(name, threadJoinTimeoutMilli, threadRestartSleepMilli);
 	}
 

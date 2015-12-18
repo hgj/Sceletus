@@ -2,13 +2,14 @@ package hu.hgj.sceletus.modules.implementations;
 
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.Set;
 
 public class ForeverRunningSingleThreadedModule extends SimpleSingleThreadedModule {
 
 	public ForeverRunningSingleThreadedModule(String name, Set<Integer> outputSet) {
 		super(name, outputSet);
-		this.threadJoinTimeoutMilli = 1000;
+		this.threadJoinTimeout = Duration.ofSeconds(1);
 	}
 
 	@Override

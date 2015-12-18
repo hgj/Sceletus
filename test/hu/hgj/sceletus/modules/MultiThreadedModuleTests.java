@@ -8,6 +8,7 @@ import hu.hgj.sceletus.modules.implementations.SimpleMultiThreadedModule;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -21,17 +22,17 @@ public class MultiThreadedModuleTests {
 	public void testConfiguration() throws IOException {
 		MultiThreadedModule module = new SimpleMultiThreadedModule("testModule", null, 0);
 		String threadJoinTimeoutFieldName =  "threadJoinTimeout";
-		String threadRestartSleepFieldName =  "threadRestartSleep";
-		int timeout = 1234;
+		String threadRestartSleepFieldName =  "threadRestartSleepDuration";
+		Duration timeout = Duration.ofSeconds(16);
 		Map<String, Object> configuration = new HashMap<String, Object>() {{
 			put("sceletus", new HashMap<String, Object>() {{
-				put(threadJoinTimeoutFieldName, timeout);
-				put(threadRestartSleepFieldName, timeout);
+				put(threadJoinTimeoutFieldName, timeout.toString());
+				put(threadRestartSleepFieldName, timeout.toString());
 			}});
 		}};
 		module.updateConfiguration(configuration);
-		assertEquals("MultiThreadedModule's threadJoinTimeout field should be updated to " + timeout, timeout, module.getThreadJoinTimeoutMilli());
-		assertEquals("MultiThreadedModule's threadRestartSleep field should be updated to " + timeout, timeout, module.getThreadRestartSleepMilli());
+		assertEquals("MultiThreadedModule's threadJoinTimeout field should be updated to " + timeout.toString(), timeout, module.getThreadJoinTimeout());
+		assertEquals("MultiThreadedModule's threadRestartSleep field should be updated to " + timeout.toString(), timeout, module.getThreadRestartSleepDuration());
 	}
 
 	@Test

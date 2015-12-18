@@ -141,6 +141,7 @@ public abstract class ConverterModule<IT, IE, OT, OE> extends AbstractModuleAdap
 	 * Override to work with (convert) the incoming elements.
 	 *
 	 * @param inputElementWithTopic The received element.
+	 *
 	 * @return The list of new, converted elements (can be empty) or null on
 	 * failure.
 	 */

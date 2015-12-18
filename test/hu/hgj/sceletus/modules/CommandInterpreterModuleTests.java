@@ -30,7 +30,7 @@ public class CommandInterpreterModuleTests {
 
 	@Test
 	public void testFooBarCommandInterpreter() throws InterruptedException {
-		// TODO: Rewrite this and other tests as actual configurations
+		// TODO: #4 Test actual configurations
 		TopicQueue<String, List<String>> inputQueue = new SimpleStringTopicQueue<>("inputQueue");
 		TopicQueue<String, String> outputQueue = new SimpleStringTopicQueue<>("outputQueue");
 		FooBarCommandInterpreterModule fooBarCommandInterpreterModule = new FooBarCommandInterpreterModule("FooBar");
