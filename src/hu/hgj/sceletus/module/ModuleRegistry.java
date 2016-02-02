@@ -19,8 +19,8 @@ public class ModuleRegistry<M extends Module> {
 		this.name = name;
 	}
 
-	public boolean register(M module) {
-		if (modules.putIfAbsent(module.getName(), module) != null) {
+	public boolean register(Module module) {
+		if (modules.putIfAbsent(module.getName(), (M) module) != null) {
 			logger.warn("Not registering Module named '{}' in ModuleRegistry '{}' as it is already registered.", module.getName(), name);
 			return false;
 		}

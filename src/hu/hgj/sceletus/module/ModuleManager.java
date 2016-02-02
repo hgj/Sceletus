@@ -83,13 +83,13 @@ public class ModuleManager {
 		return createAbstractModules(modulesConfiguration, moduleRegistry);
 	}
 
-	public static boolean createAbstractModules(List<Object> modulesConfiguration, ModuleRegistry<Module> registry) {
+	public static boolean createAbstractModules(List<Object> modulesConfiguration, ModuleRegistry<? extends Module> registry) {
 		if (modulesConfiguration.size() == 0) {
 			return true;
 		}
 		for (Object moduleConfiguration : modulesConfiguration) {
 			String moduleName;
-			List<String> moduleNames = null;
+			List<String> moduleNames;
 			String moduleClass;
 			try {
 				moduleClass = JsonPath.read(moduleConfiguration, "$.class");
@@ -142,8 +142,13 @@ public class ModuleManager {
 					} catch (PathNotFoundException exception) {
 						logger.info("No custom configuration found for module '{}' ({}). Not configuring.", moduleName, moduleClass);
 					}
-					if (!registry.register(module)) {
-						logger.error("Failed to register module '{}' ({}).", moduleName, moduleClass);
+					try {
+						if (!registry.register(module)) {
+							logger.error("Failed to register module '{}' ({}).", moduleName, moduleClass);
+							return false;
+						}
+					} catch (Exception exception) {
+						logger.error("Failed to register module (exception caught) '{}' ({}).", moduleName, moduleClass);
 						return false;
 					}
 				} else {
@@ -163,7 +168,7 @@ public class ModuleManager {
 		return createAndStartAbstractModules(modulesConfiguration, moduleRegistry);
 	}
 
-	public static boolean createAndStartAbstractModules(List<Object> modulesConfiguration, ModuleRegistry<Module> registry) throws IOException {
+	public static boolean createAndStartAbstractModules(List<Object> modulesConfiguration, ModuleRegistry<? extends Module> registry) throws IOException {
 		if (createAbstractModules(modulesConfiguration, registry)) {
 			boolean allStarted = true;
 			for (Module module : registry.getAll()) {
