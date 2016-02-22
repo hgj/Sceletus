@@ -4,6 +4,8 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import hu.hgj.sceletus.module.ConverterModule;
 import hu.hgj.sceletus.queue.WithTopic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
@@ -29,6 +31,8 @@ import java.util.List;
  * @see ConverterModule
  */
 public class DeduperModule<T, E> extends ConverterModule<T, E, T, E> {
+
+	private static final Logger logger = LoggerFactory.getLogger(DeduperModule.class);
 
 	protected Deduper<WithTopic<T, E>> deduper = new Deduper<>();
 

@@ -7,6 +7,8 @@ import hu.hgj.sceletus.queue.WithTopic;
 import hu.hgj.sceletus.queue.simple.PatternFilter;
 import hu.hgj.sceletus.queue.simple.PatternMapFilter;
 import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,6 +18,8 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public abstract class MultiConverterModule<IT, IE, OT, OE> extends AbstractModuleAdapter {
+
+	private static final Logger logger = LoggerFactory.getLogger(MultiConverterModule.class);
 
 	protected List<TopicQueue<IT, IE>> inputQueues = new ArrayList<>();
 	protected List<TopicQueue<OT, OE>> outputQueues = new ArrayList<>();

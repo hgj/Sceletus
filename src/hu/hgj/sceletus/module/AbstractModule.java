@@ -18,7 +18,7 @@ import java.util.Objects;
  */
 public abstract class AbstractModule implements Module {
 
-	protected Logger logger = LoggerFactory.getLogger(this.getClass());
+	private static final Logger logger = LoggerFactory.getLogger(AbstractModule.class);
 
 	private final String name;
 

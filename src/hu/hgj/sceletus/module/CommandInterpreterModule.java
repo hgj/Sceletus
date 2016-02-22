@@ -2,6 +2,8 @@ package hu.hgj.sceletus.module;
 
 import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.WithTopic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -9,6 +11,8 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public abstract class CommandInterpreterModule<T> extends MultiConverterModule<T, List<String>, T, String> {
+
+	private static final Logger logger = LoggerFactory.getLogger(CommandInterpreterModule.class);
 
 	public CommandInterpreterModule(String name) {
 		super(name);

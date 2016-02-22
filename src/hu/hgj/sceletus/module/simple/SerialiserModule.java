@@ -5,12 +5,16 @@ import com.jayway.jsonpath.PathNotFoundException;
 import hu.hgj.sceletus.module.ConverterModule;
 import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.WithTopic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
 public class SerialiserModule extends ConverterModule<Object, Object, Object, String> {
+
+	private static final Logger logger = LoggerFactory.getLogger(SerialiserModule.class);
 
 	protected boolean serialiseTopic = false;
 

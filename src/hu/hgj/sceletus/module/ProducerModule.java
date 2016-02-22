@@ -4,6 +4,8 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.WithTopic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
@@ -26,6 +28,8 @@ import java.util.concurrent.TimeUnit;
  * @param <O> The type of the output element.
  */
 public abstract class ProducerModule<T, O> extends MultiThreadedModule {
+
+	private static final Logger logger = LoggerFactory.getLogger(ProducerModule.class);
 
 	public static final Duration DEFAULT_SLEEP_DURATION = Duration.ofSeconds(60);
 

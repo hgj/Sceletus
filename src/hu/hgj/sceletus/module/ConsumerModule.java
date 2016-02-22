@@ -8,6 +8,8 @@ import hu.hgj.sceletus.queue.WithTopic;
 import hu.hgj.sceletus.queue.simple.PatternFilter;
 import hu.hgj.sceletus.queue.simple.PatternMapFilter;
 import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,6 +33,8 @@ import java.util.function.Predicate;
  * @param <IE> The type of the consumed element.
  */
 public abstract class ConsumerModule<IT, IE> extends AbstractModuleAdapter implements TopicQueueListener<IT, IE> {
+
+	private static final Logger logger = LoggerFactory.getLogger(ConsumerModule.class);
 
 	protected TopicQueue<IT, IE> inputQueue = null;
 

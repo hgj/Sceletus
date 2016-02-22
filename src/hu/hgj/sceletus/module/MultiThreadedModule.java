@@ -2,6 +2,8 @@ package hu.hgj.sceletus.module;
 
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
@@ -9,6 +11,8 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 
 public abstract class MultiThreadedModule extends AbstractModuleAdapter {
+
+	private static final Logger logger = LoggerFactory.getLogger(MultiThreadedModule.class);
 
 	public static final Duration DEFAULT_THREAD_JOIN_TIMEOUT = Duration.ofSeconds(5);
 	public static final Duration DEFAULT_THREAD_RESTART_SLEEP_DURATION = Duration.ofSeconds(5);

@@ -5,6 +5,8 @@ import com.jayway.jsonpath.PathNotFoundException;
 import hu.hgj.sceletus.module.ConsumerModule;
 import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.WithTopic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -16,6 +18,8 @@ import java.nio.charset.Charset;
 import java.util.function.Predicate;
 
 public class SimpleWriterModule extends ConsumerModule<Object, Object> {
+
+	private static final Logger logger = LoggerFactory.getLogger(SimpleWriterModule.class);
 
 	protected File outputFile = null;
 	protected Writer outputFileWriter = null;

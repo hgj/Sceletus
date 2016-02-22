@@ -8,6 +8,8 @@ import hu.hgj.sceletus.queue.WithTopic;
 import hu.hgj.sceletus.queue.simple.PatternFilter;
 import hu.hgj.sceletus.queue.simple.PatternMapFilter;
 import hu.hgj.sceletus.queue.simple.SimpleTopicQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,6 +38,8 @@ import java.util.function.Predicate;
  * @param <OE> The type of the output element.
  */
 public abstract class ConverterModule<IT, IE, OT, OE> extends AbstractModuleAdapter implements TopicQueueListener<IT, IE> {
+
+	private static final Logger logger = LoggerFactory.getLogger(ConverterModule.class);
 
 	protected TopicQueue<IT, IE> inputQueue = null;
 	protected TopicQueue<OT, OE> outputQueue = null;

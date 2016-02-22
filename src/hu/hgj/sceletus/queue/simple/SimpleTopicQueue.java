@@ -6,6 +6,8 @@ import hu.hgj.sceletus.module.MultiThreadedModule;
 import hu.hgj.sceletus.queue.TopicQueue;
 import hu.hgj.sceletus.queue.TopicQueueListener;
 import hu.hgj.sceletus.queue.WithTopic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -17,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 public class SimpleTopicQueue<T, E> extends MultiThreadedModule implements TopicQueue<T, E> {
+
+	private static final Logger logger = LoggerFactory.getLogger(SimpleTopicQueue.class);
 
 	public static boolean catchAllFilter(Object topic) {
 		return true;
